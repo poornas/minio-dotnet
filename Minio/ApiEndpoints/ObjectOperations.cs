@@ -786,7 +786,7 @@ namespace Minio
         public string PresignedGetObject(string bucketName, string objectName, int expiresInt)
         {
             // Initialize a new client.
-            PrepareClient();
+            PrepareClient(bucketName);
 
             RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.GET);
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
@@ -801,7 +801,7 @@ namespace Minio
         public string PresignedPutObject(string bucketName, string objectName, int expiresInt)
         {
             //Initialize a new client.
-            PrepareClient();
+            PrepareClient(bucketName);
             RestRequest request = new RestRequest(bucketName + "/" + utils.UrlEncode(objectName), Method.PUT);
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);
         }
