@@ -97,9 +97,7 @@ namespace Minio
                 string location = null;
                 var path = utils.UrlEncode(bucketName) + "?location";
                 //Initialize client
-                client.PrepareClient(bucketName:bucketName,usePathStyle:true);
-
-                
+                client.PrepareClient();
                 var request = new RestRequest(path, Method.GET);
 
                 var response = await client.ExecuteTaskAsync(client.NoErrorHandlers, request);
