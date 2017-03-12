@@ -115,7 +115,7 @@ namespace Minio
                                 string contentType = "application/xml",
                                 Object body = null, string resourcePath = null, string region = null)
         {
-            //Validate bucket name and object name
+            // Validate bucket name and object name
             if (bucketName == null && objectName == null)
             {
                 throw new InvalidBucketNameException(bucketName, "null bucket name for object '" + objectName + "'");
@@ -167,11 +167,7 @@ namespace Minio
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
                 }
-                //else if (method == Method.HEAD)
-                //{
-                //    usePathStyle = true;
-               // }
-
+               
                 if (usePathStyle)
                 {
                     resource = utils.UrlEncode(bucketName) + "/";
@@ -186,8 +182,19 @@ namespace Minio
                 resource = utils.UrlEncode(bucketName) + "/";
             }
 
+            // For Amazon S3 endpoint, try to fetch location based endpoint.
+            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
+            {
+                // Fetch new host based on the bucket location.
+                host = AWSS3Endpoints.Instance.endpoint(region);
+                if (!usePathStyle)
+                {
+                    host = utils.UrlEncode(bucketName) + "." + utils.UrlEncode(host) + "/";
+                }
+            }
+
             // Prepare client state
-            PrepareClient(bucketName, region, usePathStyle);
+            PrepareClient();
 
             if (objectName != null)
             {
@@ -233,35 +240,8 @@ namespace Minio
         /// This method initializes a new RESTClient. The host URI for Amazon is set to virtual hosted style
         /// if usePathStyle is false. Otherwise path style URL is constructed.
         /// </summary>
-        /// <param name="bucketName">bucketName</param>
-        /// <param name="region">Region bucket resides in.</param>
-        /// <param name="usePathStyle">bool controlling if pathstyle URL needs to be constructed or virtual hosted style URL</param>
-        internal void PrepareClient(string bucketName = null, string region = null, bool usePathStyle = true)
+        internal void PrepareClient()
         {
-            if (string.IsNullOrEmpty(this.BaseUrl))
-            {
-                throw new InvalidEndpointException("Endpoint cannot be empty.");
-            }
-
-            string host = this.BaseUrl;
-
-            // For Amazon S3 endpoint, try to fetch location based endpoint.
-            if (s3utils.IsAmazonEndPoint(this.BaseUrl))
-            {
-                // Fetch new host based on the bucket location.
-                host = AWSS3Endpoints.Instance.endpoint(region);
-                if (!usePathStyle)
-                {
-                    host = utils.UrlEncode(bucketName) + "." + utils.UrlEncode(host) + "/";
-                }
-            }
-            var scheme = Secure ? utils.UrlEncode("https") : utils.UrlEncode("http"); 
-
-            // This is the actual url pointed to for all HTTP requests
-            this.Endpoint = string.Format("{0}://{1}", scheme, host);
-            this.uri = TryCreateUri(this.Endpoint);  
-            _validateEndpoint();
-
             // Initialize a new REST client. This uri will be modified if region specific endpoint/virtual style request
             // is decided upon while constructing a request for Amazon.
             restClient = new RestSharp.RestClient(this.uri);
@@ -310,7 +290,6 @@ namespace Minio
                 throw new InvalidEndpointException(this.Endpoint, "No query parameter allowed in endpoint.");
             }
             if ((!this.uri.Scheme.ToLowerInvariant().Equals("https")) && (!this.uri.Scheme.ToLowerInvariant().Equals("http")))
-           //kp if (!(this.uri.Scheme.Equals(Uri.UriSchemeHttp) || this.uri.Scheme.Equals(Uri.UriSchemeHttps)))
             {
                 throw new InvalidEndpointException(this.Endpoint, "Invalid scheme detected in endpoint.");
             }
@@ -378,25 +357,49 @@ namespace Minio
         /// <summary>
         ///  Creates and returns an Cloud Storage client
         /// </summary>
-        /// <param name="endpoint">Location of the server, supports HTTP and HTTPS</param>
+        /// <param name="endpoint">Location of the server alongwith port number (optional, default 9000), supports HTTP and HTTPS</param>
+        /// <example> Valid endpoints:
+        /// https://s3.amazonaws.com
+        /// https://s3.amazonaws.com/
+        /// https://play.minio.io:9000
+        /// http://play.minio.io:9010/
+        /// localhost
+        /// localhost.localdomain
+        /// play.minio.io
+        /// 127.0.0.1
+        /// 192.168.1.60
+        /// ::1</example>
         /// <param name="accessKey">Access Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
         /// <param name="secretKey">Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
+        /// <param name="region">Region name to access service in endpoint (Optional) </param>
+        /// <param name="secure">If true, access endpoint using HTTPS else access it using HTTP </param>
         /// <returns>Client initialized with user credentials</returns>
-        public MinioClient(string endpoint, string accessKey = "", string secretKey = "")
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", bool secure = false)
         {
-
-            this.Secure = false;
+            if (string.IsNullOrEmpty(endpoint))
+            {
+                throw new InvalidEndpointException("Endpoint cannot be empty.");
+            }
 
             // Save user entered credentials
             this.BaseUrl = endpoint;
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
+            this.Secure = secure;
 
             //Instantiate a region cache 
             this.regionCache = BucketRegionCache.Instance;
 
-            return;
+            string host = this.BaseUrl;
 
+            var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
+
+            // This is the actual url pointed to for all HTTP requests
+            this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            this.uri = TryCreateUri(this.Endpoint);
+            _validateEndpoint();
+
+            return;
         }
 
         /// <summary>
