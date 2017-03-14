@@ -21,6 +21,7 @@ namespace Minio.Exceptions
     class ErrorResponseException : MinioException
     {
         public ErrorResponseException(string message) : base(message)
+
         {
         }
 

@@ -96,7 +96,7 @@ namespace Minio.Examples
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
-
+                
                 // Check if bucket exists
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
@@ -145,9 +145,14 @@ namespace Minio.Examples
                 // Get the policy for given bucket
                 Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
 
-                //Cases.PresignedGetObject.Run(minioClient);
-                //Cases.PresignedPostPolicy.Run(minioClient);
-                //Cases.PresignedPutObject.Run(minioClient);
+                // Get the presigned url for a GET object request
+                Cases.PresignedGetObject.Run(minioClient,bucketName,objectName).Wait();
+
+                // Get the presigned POST policy curl url
+                Cases.PresignedPostPolicy.Run(minioClient);
+
+                // Get the presigned url for a PUT object request
+                Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
 
                 // Delete the objects
                 Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
@@ -160,7 +165,7 @@ namespace Minio.Examples
                 // Remove the binary files created for test
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);
-
+                
                 Console.ReadLine();
             }
             catch (MinioException ex)
