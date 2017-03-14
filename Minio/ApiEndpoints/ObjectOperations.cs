@@ -750,10 +750,8 @@ namespace Minio
                 destObjectName = objectName;
             }
 
-            var path = destBucketName + "/" + utils.UrlEncode(destObjectName);
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                                   objectName: objectName,
-                                                   resourcePath: path);
+            var request = await this.CreateRequest(Method.PUT, destBucketName,
+                                                   objectName: destObjectName);
 
             // Set the object source
             request.AddHeader("x-amz-copy-source", sourceObjectPath);

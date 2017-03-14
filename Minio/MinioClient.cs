@@ -126,7 +126,7 @@ namespace Minio
                 utils.validateObjectName(objectName);
 
             }
-
+            
             // Start with user specified endpoint
             string host = this.BaseUrl;
 
@@ -142,7 +142,6 @@ namespace Minio
                     region = BucketRegionCache.Instance.Region(bucketName);
                 }
             }
-
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
@@ -295,7 +294,7 @@ namespace Minio
             }
             string amzHost = this.BaseUrl;
             if ((amzHost.EndsWith(".amazonaws.com", StringComparison.CurrentCultureIgnoreCase))
-                 && !(amzHost.Equals("s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
+                 && !(amzHost.Equals("https://s3.amazonaws.com", StringComparison.CurrentCultureIgnoreCase)))
             {
                 throw new InvalidEndpointException(amzHost, "For Amazon S3, host should be \'s3.amazonaws.com\' in endpoint.");
             }
@@ -357,7 +356,7 @@ namespace Minio
         /// <summary>
         ///  Creates and returns an Cloud Storage client
         /// </summary>
-        /// <param name="endpoint">Location of the server alongwith port number (optional, default 9000), supports HTTP and HTTPS</param>
+        /// <param name="endpoint">Location of the server alongwith port number (optional), supports HTTP and HTTPS</param>
         /// <example> Valid endpoints:
         /// https://s3.amazonaws.com
         /// https://s3.amazonaws.com/
@@ -371,10 +370,8 @@ namespace Minio
         /// ::1</example>
         /// <param name="accessKey">Access Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
         /// <param name="secretKey">Secret Key for authenticated requests (Optional,can be omitted for anonymous requests)</param>
-        /// <param name="region">Region name to access service in endpoint (Optional) </param>
-        /// <param name="secure">If true, access endpoint using HTTPS else access it using HTTP </param>
         /// <returns>Client initialized with user credentials</returns>
-        public MinioClient(string endpoint, string accessKey = "", string secretKey = "", string region = "", bool secure = false)
+        public MinioClient(string endpoint, string accessKey = "", string secretKey = "")
         {
             if (string.IsNullOrEmpty(endpoint))
             {
@@ -385,31 +382,34 @@ namespace Minio
             this.BaseUrl = endpoint;
             this.AccessKey = accessKey;
             this.SecretKey = secretKey;
-            this.Secure = secure;
+           
+            // check if security needs to be enabled from the endpoint passed. 
+            // default protocol is http, i.e. if the endpoint doesn't have https
+            // we use http
+            this.Secure = endpoint.StartsWith("https://") ? true : false;
 
             //Instantiate a region cache 
             this.regionCache = BucketRegionCache.Instance;
 
-            string host = this.BaseUrl;
+            // strip protocol if present, before creating the endpoint
+            string host = endpoint;
+            if (endpoint.StartsWith("http://"))
+            {
+                host = endpoint.Substring("http://".Length);
+            }
+            if (endpoint.StartsWith("https://"))
+            {
+                host = endpoint.Substring("https://".Length);
+            }
 
             var scheme = this.Secure ? utils.UrlEncode("https") : utils.UrlEncode("http");
 
-            // This is the actual url pointed to for all HTTP requests
+            // This is the actual url pointed to for all requests
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
             this.uri = TryCreateUri(this.Endpoint);
             _validateEndpoint();
 
             return;
-        }
-
-        /// <summary>
-        /// Connects to Cloud Storage with HTTPS if this method is invoked on client object
-        /// </summary>
-        /// <returns></returns>
-        public MinioClient WithSSL()
-        {
-            this.Secure = true;
-            return this;
         }
 
         internal async Task<IRestResponse<T>> ExecuteTaskAsync<T>(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request) where T : new()

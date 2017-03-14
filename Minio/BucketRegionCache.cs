@@ -42,6 +42,7 @@ namespace Minio
         {
             regionMap = new ConcurrentDictionary<string, string>();
         }
+
         /**
          * Returns AWS region for given bucket name.
         */

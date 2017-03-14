@@ -15,22 +15,22 @@
  */
 
 using System;
-using System.Text;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Configuration;
 using Minio.Exceptions;
-using Minio;
+using System.Threading.Tasks;
+using HttpMock;
+
 namespace Minio.Tests
 {
     /// <summary>
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class UnitTest1
+    public class MinioClientTest
     {
-        public UnitTest1()
+        public MinioClientTest()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                     | SecurityProtocolType.Tls11
@@ -81,13 +81,6 @@ namespace Minio.Tests
         //
         #endregion
 
-        [TestMethod]
-        public void TestMethod1()
-        {
-            //
-            // TODO: Add test logic here
-            //
-        }
         [TestMethod]
         public void TestWithUrl()
         {
@@ -153,7 +146,7 @@ namespace Minio.Tests
         [TestMethod]
         public void TestEndpointSuccess()
         {
-            new MinioClient("s3.amazonaws.com");
+            new MinioClient("https://s3.amazonaws.com");
         }
 
         [TestMethod]
@@ -163,13 +156,16 @@ namespace Minio.Tests
             new MinioClient("s3-us-west-1.amazonaws.com");
         }
 
-        //[TestMethod]
-        //[ExpectedException(typeof(ArgumentException))]
-        //public void TestPutObject()
-        //{
-        //    var client = new MinioClient("localhost", 9000,);
-        //    await client.PutObjectAsync("bucket-name", "object-name", null, 5 * 1024L * 1024L * 11000, null);
-        //}
+        [TestMethod]
+        public void TestBucketExistsAsync()
+        {
+            var _stubHttp = HttpMockRepository.At("http://localhost:9000");
+
+            _stubHttp.Stub(x => x.Head("/")).OK();
+
+            MinioClient client = new MinioClient("http://localhost:9000");
+            client.BucketExistsAsync("my-bucket").Wait();
+        }
     }
 }
 
