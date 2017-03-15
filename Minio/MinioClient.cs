@@ -145,7 +145,7 @@ namespace Minio
 
             // This section reconstructs the url with scheme followed by location specific endpoint( s3.region.amazonaws.com)
             // or Virtual Host styled endpoint (bucketname.s3.region.amazonaws.com) for Amazon requests.
-            string resource = null;              //Resource being requested  
+            string resource = "";              //Resource being requested  
             bool usePathStyle = false;
             if (s3utils.IsAmazonEndPoint(this.BaseUrl))
             {
@@ -170,10 +170,6 @@ namespace Minio
                 if (usePathStyle)
                 {
                     resource = utils.UrlEncode(bucketName) + "/";
-                }
-                else
-                {
-                    resource = "/";
                 }
             }
             else

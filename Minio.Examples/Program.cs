@@ -149,7 +149,7 @@ namespace Minio.Examples
                 Cases.PresignedGetObject.Run(minioClient,bucketName,objectName).Wait();
 
                 // Get the presigned POST policy curl url
-                Cases.PresignedPostPolicy.Run(minioClient);
+                Cases.PresignedPostPolicy.Run(minioClient).Wait();
 
                 // Get the presigned url for a PUT object request
                 Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();

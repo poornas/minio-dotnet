@@ -808,10 +808,21 @@ namespace Minio
         /// <summary>
         ///  Presigned post policy
         /// </summary>
-        public Dictionary<string, string> PresignedPostPolicy(PostPolicy policy)
+        public async Task<Tuple<string,Dictionary<string, string>>> PresignedPostPolicyAsync(PostPolicy policy)
         {
+            string region = null;
+
             //Initialize a new client.
-            PrepareClient();
+            if (!BucketRegionCache.Instance.Exists(policy.Bucket))
+            {
+                region = await BucketRegionCache.Instance.Update(this, policy.Bucket);
+            }
+            else
+            {
+                region = BucketRegionCache.Instance.Region(policy.Bucket);
+            }
+
+            PrepareClient(region:region,bucketName:policy.Bucket,usePathStyle: false);
 
             if (!policy.IsBucketSet())
             {
@@ -827,8 +838,8 @@ namespace Minio
             {
                 throw new ArgumentException("expiration should be set");
             }
-
-            string region = Regions.GetRegion(this.restClient.BaseUrl.Host);
+            
+            //string region = Regions.GetRegion(this.restClient.BaseUrl.Host);
             DateTime signingDate = DateTime.UtcNow;
 
             policy.SetAlgorithm("AWS4-HMAC-SHA256");
@@ -841,7 +852,7 @@ namespace Minio
             policy.SetPolicy(policyBase64);
             policy.SetSignature(signature);
 
-            return policy.GetFormData();
+            return new Tuple<string,Dictionary<string,string>>(this.restClient.BaseUrl.Host, policy.GetFormData());
         }
     }
 }
