@@ -34,7 +34,7 @@ namespace SimpleTest
             /// See instructions in README.md on running examples for more information.
             var minio = new MinioClient(ConfigurationManager.AppSettings["Endpoint"],
                                              ConfigurationManager.AppSettings["AccessKey"],
-                                             ConfigurationManager.AppSettings["SecretKey"]).WithSSL();
+                                             ConfigurationManager.AppSettings["SecretKey"]);
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                                   | SecurityProtocolType.Tls11
                                                   | SecurityProtocolType.Tls12;

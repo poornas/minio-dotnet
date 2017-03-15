@@ -72,13 +72,11 @@ namespace Minio.Examples
                                      | SecurityProtocolType.Tls12;
 #endif
 #if NETCOREAPP1_0
-            endPoint = "play.minio.io:9000";
+            endPoint = "https://play.minio.io:9000";
             accessKey = "Q3AM3UQ867SPQQA43P2F";
             secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
 #endif
-
-            // WithSSL() enables SSL support in Minio client
-            var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
+            var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey);
 
             try
             {
@@ -154,8 +152,12 @@ namespace Minio.Examples
                 Cases.PresignedPostPolicy.Run(minioClient).Wait();
 
                 // Get the presigned url for a PUT object request
-                Cases.PresignedPutObject.Run(minioClient,bucketName,objectName).Wait();
-                
+                Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
+
+                // Delete the objects
+                Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
+                Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
+
                 // Remove the buckets
                 Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
                 Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();

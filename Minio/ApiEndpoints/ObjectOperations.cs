@@ -750,10 +750,8 @@ namespace Minio
                 destObjectName = objectName;
             }
 
-            var path = destBucketName + "/" + utils.UrlEncode(destObjectName);
-            var request = await this.CreateRequest(Method.PUT, bucketName,
-                                                   objectName: objectName,
-                                                   resourcePath: path);
+            var request = await this.CreateRequest(Method.PUT, destBucketName,
+                                                   objectName: destObjectName);
 
             // Set the object source
             request.AddHeader("x-amz-copy-source", sourceObjectPath);
@@ -785,6 +783,7 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds</param>
         public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
+            // Initialize a new client.
             var request = await this.CreateRequest(Method.GET, bucketName,
                                                     objectName: objectName);
     
@@ -799,6 +798,8 @@ namespace Minio
         /// <param name="expiresInt">Expiration time in seconds</param>
         public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
+            //Initialize a new client.
+
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                                     objectName: objectName);
             return this.authenticator.PresignURL(this.restClient, request, expiresInt);

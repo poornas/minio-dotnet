@@ -31,6 +31,8 @@ namespace Minio.Examples.Cases
             try
             {
                 Console.Out.WriteLine("Running example for API: CopyObjectAsync");
+                // Create the destination bucket. CopyObject does not create destination bucket
+                await minio.MakeBucketAsync(destBucketName);
                 //Optionally pass copy conditions
                 await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 
