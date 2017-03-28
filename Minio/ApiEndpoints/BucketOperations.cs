@@ -116,7 +116,7 @@ namespace Minio
         /// <param name="bucketName">Name of bucket to remove</param>
         public async Task RemoveBucketAsync(string bucketName)
         {
-            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath: "/");
+            var request = await this.CreateRequest(Method.DELETE, bucketName, resourcePath:null);
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request);
 

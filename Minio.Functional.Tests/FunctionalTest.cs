@@ -62,8 +62,8 @@ namespace Minio.Functional.Tests
             String endPoint = null;
             String accessKey = null;
             String secretKey = null;
-           
-            if (Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null)
+            bool useAWS = true;
+            if (useAWS && Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
                 accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
@@ -81,92 +81,104 @@ namespace Minio.Functional.Tests
 
             try
             {
+              
                 // Assign parameters before starting the test 
                 string bucketName = GetRandomName();
-                string smallFileName = CreateFile(1 * MB);
-                string bigFileName = CreateFile(6 * MB);
+               // string smallFileName = CreateFile(1 * MB);
+               // string bigFileName = CreateFile(6 * MB);
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
-
+               
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
 
                 // Set HTTP Tracing On
-                minioClient.SetTraceOn();
+                // minioClient.SetTraceOn();
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
-
+                /* TESTED SO FAR 
                 // Check if bucket exists
-                //BucketExists(minioClient, bucketName).Wait();
+                BucketExists_Test(minioClient).Wait();
 
                 // Create a new bucket
-                MakeBucket(minioClient).Wait();
+                 MakeBucket_Test1(minioClient).Wait();
+                 MakeBucket_Test2(minioClient).Wait();
+                 MakeBucket_Test3(minioClient).Wait();
+                 MakeBucket_Test4(minioClient).Wait();
 
-                // List all the buckets on the server
-                ListBuckets(minioClient).Wait();
+                //Test removal of bucket
+                RemoveBucket_Test1(minioClient).Wait();
 
-                // Put an object to the new bucket
-                PutObject(minioClient, bucketName, objectName, smallFileName).Wait();
+                //Test ListBuckets function
+                ListBuckets_Test(minioClient).Wait();
 
-                // Get object metadata
-                StatObject(minioClient, bucketName, objectName).Wait();
+                END WORKING TESTS
+                */
 
-                // List the objects in the new bucket
-                ListObjects(minioClient, bucketName);
+                /*
+                           
+                                // Put an object to the new bucket
+                                PutObject(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // Delete the file and Download the object as file
-                GetObject(minioClient, bucketName, objectName, smallFileName).Wait();
+                                // Get object metadata
+                                StatObject(minioClient, bucketName, objectName).Wait();
 
-                // Server side copyObject
-                CopyObject(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
+                                // List the objects in the new bucket
+                                ListObjects(minioClient, bucketName);
 
-                // Upload a File with PutObject
-                FPutObject(minioClient, bucketName, objectName, smallFileName).Wait();
+                                // Delete the file and Download the object as file
+                                GetObject(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // Delete the file and Download the object as file
-                FGetObject(minioClient, bucketName, objectName, smallFileName).Wait();
+                                // Server side copyObject
+                                CopyObject(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
 
-                // Automatic Multipart Upload with object more than 5Mb
-                PutObject(minioClient, bucketName, objectName, bigFileName).Wait();
+                                // Upload a File with PutObject
+                                FPutObject(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // List the incomplete uploads
-                ListIncompleteUploads(minioClient, bucketName);
+                                // Delete the file and Download the object as file
+                                FGetObject(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // Remove all the incomplete uploads
-                RemoveIncompleteUpload(minioClient, bucketName, objectName).Wait();
+                                // Automatic Multipart Upload with object more than 5Mb
+                                PutObject(minioClient, bucketName, objectName, bigFileName).Wait();
 
-                // Set a policy for given bucket
-                SetBucketPolicy(minioClient, PolicyType.READ_ONLY, bucketName).Wait();
+                                // List the incomplete uploads
+                                ListIncompleteUploads(minioClient, bucketName);
 
-                // Get the policy for given bucket
-                GetBucketPolicy(minioClient, bucketName).Wait();
+                                // Remove all the incomplete uploads
+                                RemoveIncompleteUpload(minioClient, bucketName, objectName).Wait();
 
-                // Get the presigned url for a GET object request
-                PresignedGetObject(minioClient, bucketName, objectName).Wait();
+                                // Set a policy for given bucket
+                                SetBucketPolicy(minioClient, PolicyType.READ_ONLY, bucketName).Wait();
 
-                // Get the presigned POST policy curl url
-                PresignedPostPolicy(minioClient).Wait();
+                                // Get the policy for given bucket
+                                GetBucketPolicy(minioClient, bucketName).Wait();
 
-                // Get the presigned url for a PUT object request
-                PresignedPutObject(minioClient, bucketName, objectName).Wait();
+                                // Get the presigned url for a GET object request
+                                PresignedGetObject(minioClient, bucketName, objectName).Wait();
+
+                                // Get the presigned POST policy curl url
+                                PresignedPostPolicy(minioClient).Wait();
+
+                                // Get the presigned url for a PUT object request
+                                PresignedPutObject(minioClient, bucketName, objectName).Wait();
 
 
-                // Delete the object
-                RemoveObject(minioClient, bucketName, objectName).Wait();
+                                // Delete the object
+                                RemoveObject(minioClient, bucketName, objectName).Wait();
 
-                // Delete the object
-                RemoveObject(minioClient, destBucketName, objectName).Wait();
+                                // Delete the object
+                                RemoveObject(minioClient, destBucketName, objectName).Wait();
 
-                // Remove the buckets
-                RemoveBucket(minioClient, bucketName).Wait();
-                RemoveBucket(minioClient, destBucketName).Wait();
+                                // Remove the buckets
+                               // RemoveBucket(minioClient, bucketName).Wait();
+                               // RemoveBucket(minioClient, destBucketName).Wait();
 
-                // Remove the binary files created for test
-                File.Delete(smallFileName);
-                File.Delete(bigFileName);
-
+                                // Remove the binary files created for test
+                                File.Delete(smallFileName);
+                                File.Delete(bigFileName);
+                                */
                 Console.ReadLine();
             }
             catch (MinioException ex)
@@ -175,84 +187,160 @@ namespace Minio.Functional.Tests
             }
 
         }
-        private async static Task BucketExists(MinioClient minio, string bucketName)
+        private async static Task BucketExists_Test(MinioClient minio)
         {
             Console.Out.WriteLine("Test: BucketExistsAsync");
-            string name = GetRandomName();
+            string bucketName = GetRandomName();
             await minio.MakeBucketAsync(bucketName);
             bool found = await minio.BucketExistsAsync(bucketName);
             Assert.IsTrue(found);
             await minio.RemoveBucketAsync(bucketName);
         }
-        private async static Task MakeBucket(MinioClient minio, string bucketName=null)
+        private async static Task MakeBucket_Test1(MinioClient minio)
         {
-            Console.Out.WriteLine("Test: MakeBucketAsync");
-            if (bucketName == null)
-            {
-                bucketName = GetRandomName(length: 60);
-            }
+            Console.Out.WriteLine("Test 1: MakeBucketAsync");
+            string bucketName = GetRandomName(length: 60);
             await minio.MakeBucketAsync(bucketName);
+            bool found = await minio.BucketExistsAsync(bucketName);
+            Assert.IsTrue(found);
+            await minio.RemoveBucketAsync(bucketName);
+        }
+        private async static Task MakeBucket_Test2(MinioClient minio)
+        {
+            Console.Out.WriteLine("Test 2 : MakeBucketAsync");
+            string bucketName = GetRandomName(length: 10) + ".withperiod";
+            await minio.MakeBucketAsync(bucketName);
+            bool found = await minio.BucketExistsAsync(bucketName);
+            Assert.IsTrue(found);
+            await minio.RemoveBucketAsync(bucketName);
+        }
+        private async static Task MakeBucket_Test3(MinioClient minio)
+        {
+            Console.Out.WriteLine("Test 3 : MakeBucketAsync with region");
+            string bucketName = GetRandomName(length: 60);
             try
             {
-                await minio.MakeBucketAsync("mountshasta");
+                await minio.MakeBucketAsync(bucketName, location: "eu-central-1");
+                bool found = await minio.BucketExistsAsync(bucketName);
+                Assert.IsTrue(found);
+                if (found)
+                {
+                    await minio.MakeBucketAsync(bucketName);
+                    await minio.RemoveBucketAsync(bucketName);
 
+                }
             }
             catch (MinioException ex)
             {
                 Assert.AreEqual<string>(ex.message, "The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again.");
             }
-            await minio.RemoveBucketAsync(bucketName);
-     
-            bucketName = GetRandomName(length: 50);
-            try
-            {
-                //TODO: Failing test
-               // await minio.MakeBucketAsync(bucketName, "us-west-1");
-               // await minio.RemoveBucketAsync(bucketName);
-
-            }
-            catch (AggregateException aggEx)
-            {
-                aggEx.Handle(HandleBatchExceptions);
-            }
          
         }
-
-        private static bool HandleBatchExceptions(Exception exceptionToHandle)
+        private async static Task MakeBucket_Test4(MinioClient minio)
         {
-            if (exceptionToHandle is ArgumentNullException)
+            Console.Out.WriteLine("Test 4 : MakeBucketAsync with region");
+            string bucketName = GetRandomName(length: 20) + ".withperiod" ;
+            try
             {
-                //I'm handling the ArgumentNullException.
-                Console.Out.WriteLine("Handling the ArgumentNullException.");
-                //I handled this Exception, return true.
-                return true;
+                await minio.MakeBucketAsync(bucketName, location: "us-west-2");
+                bool found = await minio.BucketExistsAsync(bucketName);
+                Assert.IsTrue(found);
+                if (found)
+                {
+                    await minio.RemoveBucketAsync(bucketName);
+
+                }
             }
-            else
+            catch (MinioException ex)
             {
-                //I'm only handling ArgumentNullExceptions.
-                Console.Out.WriteLine(string.Format("I'm not handling the {0}.", exceptionToHandle.GetType()));
-                //I didn't handle this Exception, return false.
-                return false;
+                Assert.Fail();
             }
         }
 
-        private async static Task RemoveBucket(MinioClient minio,string bucketName)
+        private async static Task RemoveBucket_Test1(MinioClient minio)
         {
             Console.Out.WriteLine("Test: RemoveBucketAsync");
-            string name = GetRandomName();
+            string bucketName = GetRandomName(length: 60);
             await minio.MakeBucketAsync(bucketName);
             bool found = await minio.BucketExistsAsync(bucketName);
             Assert.IsTrue(found);
             await minio.RemoveBucketAsync(bucketName);
             found = await minio.BucketExistsAsync(bucketName);
             Assert.IsFalse(found);
-        }
-        private async static Task ListBuckets(MinioClient minio)
-        {
+            Console.Out.WriteLine("Test: RemoveBucketAsync succeeded");
 
         }
-        private async static Task PutObject(MinioClient minio, string bucketName,string objectName, string fileName=null)
+        private async static Task ListBuckets_Test(MinioClient minio)
         {
+            try
+            {
+                Console.Out.WriteLine("Test: ListBucketsAsync");
+                var list = await minio.ListBucketsAsync();
+                foreach (Bucket bucket in list.Buckets)
+                {
+                    //Ignore
+                    continue;
+                }
+            }
+            catch (Exception e)
+            {
+                Assert.Fail();
+            }
+        }
+        private async static Task Setup_Test(MinioClient minio, string bucketName)
+        {
+            await minio.MakeBucketAsync(bucketName);
+        }
+
+        private async static Task TearDown(MinioClient minio, string bucketName)
+        {
+            await minio.RemoveBucketAsync(bucketName);
+        }
+
+        private async static Task PutObject_Test1(MinioClient minio, string bucketName,string objectName, string fileName=null,string contentType="application/octet-stream")
+        {
+            Console.Out.WriteLine("Test1: PutobjectAsync");
+            try
+            {
+                byte[] bs = File.ReadAllBytes(fileName);
+                System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
+                if (filestream.Length < (5 * MB))
+                {
+                    Console.Out.WriteLine("Test1: PutobjectAsync: PutObjectAsync with Stream");
+                }
+                else
+                {
+                    Console.Out.WriteLine("Test1: PutobjectAsync: PutObjectAsync with Stream and MultiPartUpload");
+                }
+                await minio.PutObjectAsync(bucketName,
+                                           objectName,
+                                           filestream,
+                                           filestream.Length,
+                                           contentType);
+
+                await minio.GetObjectAsync(bucketName, objectName,
+               (stream) =>
+               {
+                   Assert.AreEqual(stream.Length, bs.Length);
+
+                    // Uncommment to print the file on output console
+                    //stream.CopyTo(Console.OpenStandardOutput());
+                });
+                ObjectStat statObject = await minio.StatObjectAsync(bucketName, objectName);
+                Assert.IsNotNull(statObject);
+                Assert.AreEqual(statObject.ObjectName, objectName);
+                Assert.AreEqual(statObject.Size, bs.Length);
+                Assert.AreEqual(statObject.ContentType, contentType);
+
+                await minio.RemoveObjectAsync(bucketName, objectName);
+                await minio.RemoveBucketAsync(bucketName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Assert.Fail();
+            }
+
         }
         private async static Task CopyObject(MinioClient minio, string bucketName, string objectName, string fdestBucketName, string destObjectName)
         {
