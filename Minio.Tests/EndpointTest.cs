@@ -142,9 +142,51 @@ namespace Minio.Tests
             };
             foreach (KeyValuePair<string, bool> testCase in testDomainDict)
             {
-                bool value = s3utils.IsValidDomain(testCase.Key);
-                Console.Out.WriteLine(testCase + value.ToString());
                 Assert.AreEqual(s3utils.IsValidDomain(testCase.Key), testCase.Value);
+            }
+        }
+
+        [TestMethod]
+        public void TestIsAmazonEndpoint()
+        {
+            Dictionary<string, bool> testAmazonDict = new Dictionary<string, bool>
+            {
+                {"192.168.1.1", false},
+                {"storage.googleapis.com", false},
+                {"s3.amazonaws.com", true},
+                {"amazons3.amazonaws.com", false},
+                {"-192.168.1.1", false},
+                {"260.192.1.1", false},
+		        {"https://s3.amazonaws.com", false},
+                {"s3.cn-north-1.amazonaws.com.cn", true},
+            };
+            foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
+            {
+                bool value = s3utils.IsAmazonEndPoint(testCase.Key);
+                Console.Out.WriteLine(testCase + value.ToString());
+                Assert.AreEqual(s3utils.IsAmazonEndPoint(testCase.Key), testCase.Value);
+            }
+        }
+
+        [TestMethod]
+        public void TestIsAmazonChinaEndpoint()
+        {
+            Dictionary<string, bool> testAmazonDict = new Dictionary<string, bool>
+            {
+                {"192.168.1.1", false},
+                {"storage.googleapis.com", false},
+                {"s3.amazonaws.com", false},
+                {"amazons3.amazonaws.com", false},
+                {"-192.168.1.1", false},
+                {"260.192.1.1", false},
+                {"https://s3.amazonaws.com", false},
+                {"s3.cn-north-1.amazonaws.com.cn", true},
+            };
+            foreach (KeyValuePair<string, bool> testCase in testAmazonDict)
+            {
+                bool value = s3utils.IsAmazonChinaEndPoint(testCase.Key);
+                Console.Out.WriteLine(testCase + value.ToString());
+                Assert.AreEqual(s3utils.IsAmazonChinaEndPoint(testCase.Key), testCase.Value);
             }
         }
     }

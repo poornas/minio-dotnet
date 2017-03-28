@@ -25,7 +25,7 @@ using System.Net;
 
 namespace SimpleTest
 {
-    class Program
+    class SimpleTest
     {
         static void Main(string[] args)
         {
