@@ -136,7 +136,7 @@ namespace Minio.Functional.Tests
 
                 //PutObject_Test4(minioClient).Wait();
 
-
+                ListObjects_Test1(minioClient).Wait();
 
                 /*
                            
@@ -574,8 +574,58 @@ namespace Minio.Functional.Tests
             File.Delete(fileName);
             Console.Out.WriteLine("Test2: PutObjectAsync Complete");
         }
-        private async static Task ListObjects(MinioClient minio, string bucketName)
+        private async static Task ListObjects_Test1(MinioClient minio)
         {
+            Console.Out.WriteLine("Test1: ListObjectsAsync");
+            string bucketName = GetRandomName(15);
+            string prefix = "minix";
+            string objectName1 = prefix + GetRandomName(10);
+            string objectName2 = prefix + GetRandomName(10);
+            string fileName = CreateFile(1 * MB);
+            await Setup_Test(minio, bucketName);
+            await minio.PutObjectAsync(bucketName,
+                                        objectName1,
+                                        fileName);
+            await minio.PutObjectAsync(bucketName,
+                                       objectName2,
+                                       fileName);
+            ListObjects_Test(minio, bucketName, prefix,true).Wait();
+            Console.Out.WriteLine("removing objects");
+            await minio.RemoveObjectAsync(bucketName, objectName1);
+            await minio.RemoveObjectAsync(bucketName, objectName2);
+
+
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test1: ListObjectsAsync Complete");
+        }
+        private async static Task ListObjects_Test(MinioClient minio,string bucketName, string prefix,bool recursive=true)
+        {
+            int count = 0;
+            try
+            {
+                IObservable<Item> observable = minio.ListObjectsAsync(bucketName, prefix, recursive);
+                IDisposable subscription = observable.Subscribe(
+                    item =>
+                    {
+                        Assert.IsTrue(item.Key.StartsWith(prefix));
+                        count += 1;
+                        Console.Out.WriteLine(item.Key + ":" + count.ToString());
+                    },
+                    ex => Console.WriteLine("OnError: {0}", ex),
+                    () =>
+                    {
+                        Console.WriteLine("Listed all objects in bucket " + bucketName + "\n");
+                        Assert.AreEqual(count, 2);
+
+                    });
+
+                //subscription.Dispose();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
+            }
         }
         private async static Task FGetObject(MinioClient minio, string bucketName, string objectName, string fileName = null)
         {
