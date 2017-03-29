@@ -66,8 +66,8 @@ namespace Minio.Functional.Tests
             if (useAWS && Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
-                accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
-                secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
+                accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
+                secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
             }
             else
             {
@@ -114,8 +114,19 @@ namespace Minio.Functional.Tests
                 //Test ListBuckets function
                 ListBuckets_Test(minioClient).Wait();
 
+                //Test Putobject function
+                PutObject_Test1(minioClient).Wait();
+                PutObject_Test2(minioClient).Wait();
+
+                PutObject_Test3(minioClient).Wait();
+
+                //Test StatObject function
+                StatObject_Test1(minioClient).Wait();
+
                 END WORKING TESTS
                 */
+
+                //PutObject_Test4(minioClient).Wait();
 
                 /*
                            
@@ -290,20 +301,81 @@ namespace Minio.Functional.Tests
         private async static Task Setup_Test(MinioClient minio, string bucketName)
         {
             await minio.MakeBucketAsync(bucketName);
+            bool found = await minio.BucketExistsAsync(bucketName);
+            Assert.IsTrue(found);
         }
 
         private async static Task TearDown(MinioClient minio, string bucketName)
         {
             await minio.RemoveBucketAsync(bucketName);
         }
-
-        private async static Task PutObject_Test1(MinioClient minio, string bucketName,string objectName, string fileName=null,string contentType="application/octet-stream")
+        private async static Task PutObject_Test1(MinioClient minio)
         {
-            Console.Out.WriteLine("Test1: PutobjectAsync");
+            Console.Out.WriteLine("Test1: PutobjectAsync with stream");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(3 * MB);
+            string contentType = "application/octet-stream";
+            await Setup_Test(minio, bucketName);
+            await PutObject_Tester(minio, bucketName, objectName, fileName, contentType);
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test1: PutobjectAsync with stream complete");
+
+        }
+
+        private async static Task PutObject_Test2(MinioClient minio)
+        {
+            Console.Out.WriteLine("Test2: PutobjectAsync with large stream");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(8 * MB);
+            string contentType = "application/octet-stream";
+            await Setup_Test(minio, bucketName);
+            await PutObject_Tester(minio, bucketName, objectName, fileName, contentType);
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test2: PutobjectAsync with stream complete");
+
+        }
+
+        private async static Task PutObject_Test3(MinioClient minio)
+        {
+            Console.Out.WriteLine("Test3: PutobjectAsync with  different content-type");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(1 * MB);
+            string contentType = "custom-contenttype";
+            await Setup_Test(minio, bucketName);
+            await PutObject_Tester(minio, bucketName, objectName, fileName, contentType);
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test3: PutobjectAsync with different content-type complete");
+
+        }
+        private async static Task PutObject_Test4(MinioClient minio)
+        {
+            // TODO: Stop the putobject call and resume multipart upload to see if it completes
+            Console.Out.WriteLine("Test4: PutobjectAsync resume multi-part upload");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(1 * MB);
+            string contentType = "application/octet-stream";
+            await Setup_Test(minio, bucketName);
+            await PutObject_Tester(minio, bucketName, objectName, fileName, contentType);
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test4: PutobjectAsync with different content-type complete");
+        }
+        private async static Task PutObject_Tester(MinioClient minio, string bucketName,string objectName, string fileName=null,string contentType="application/octet-stream")
+        {
             try
             {
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
+                long file_write_size = filestream.Length;
+                long file_read_size = 0 ;
+                string tempFileName = "tempfiletosavestream";
                 if (filestream.Length < (5 * MB))
                 {
                     Console.Out.WriteLine("Test1: PutobjectAsync: PutObjectAsync with Stream");
@@ -321,25 +393,69 @@ namespace Minio.Functional.Tests
                 await minio.GetObjectAsync(bucketName, objectName,
                (stream) =>
                {
-                   Assert.AreEqual(stream.Length, bs.Length);
+                   var fileStream = File.Create(tempFileName);
+                   stream.CopyTo(fileStream);
+                   fileStream.Dispose();
+                   FileInfo writtenInfo = new FileInfo(tempFileName);
+                   file_read_size = writtenInfo.Length;
 
-                    // Uncommment to print the file on output console
-                    //stream.CopyTo(Console.OpenStandardOutput());
+                   Assert.AreEqual(file_read_size, file_write_size);
+                   File.Delete(tempFileName);
                 });
                 ObjectStat statObject = await minio.StatObjectAsync(bucketName, objectName);
                 Assert.IsNotNull(statObject);
                 Assert.AreEqual(statObject.ObjectName, objectName);
-                Assert.AreEqual(statObject.Size, bs.Length);
+                Assert.AreEqual(statObject.Size, file_read_size);
                 Assert.AreEqual(statObject.ContentType, contentType);
 
                 await minio.RemoveObjectAsync(bucketName, objectName);
-                await minio.RemoveBucketAsync(bucketName);
             }
             catch (Exception e)
             {
                 Console.WriteLine("[Bucket]  Exception: {0}", e);
                 Assert.Fail();
             }
+
+        }
+
+        private async static Task StatObject_Test1(MinioClient minio)
+        {
+            Console.Out.WriteLine("Test1: StatObjectAsync");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(1 * MB);
+            string contentType = "gzip";
+            await Setup_Test(minio, bucketName);
+            try
+            {
+                byte[] bs = File.ReadAllBytes(fileName);
+                System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
+                long file_write_size = filestream.Length;
+                 
+                await minio.PutObjectAsync(bucketName,
+                                           objectName,
+                                           filestream,
+                                           filestream.Length,
+                                           contentType);
+
+             
+                ObjectStat statObject = await minio.StatObjectAsync(bucketName, objectName);
+                Assert.IsNotNull(statObject);
+                Assert.AreEqual(statObject.ObjectName, objectName);
+                Assert.AreEqual(statObject.Size, file_write_size);
+                Assert.AreEqual(statObject.ContentType, contentType);
+
+                await minio.RemoveObjectAsync(bucketName, objectName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Assert.Fail();
+            }
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test1: StatObjectAsync Complete");
+           
 
         }
         private async static Task CopyObject(MinioClient minio, string bucketName, string objectName, string fdestBucketName, string destObjectName)

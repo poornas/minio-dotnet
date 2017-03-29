@@ -8,7 +8,6 @@
   <ItemGroup>
     <PackageReference Include="MSTest.TestFramework" Version="1.1.13" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Minio.Core\Minio.Core.csproj" />
   </ItemGroup>
