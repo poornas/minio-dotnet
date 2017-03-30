@@ -536,6 +536,8 @@ namespace Minio
                     if (HttpStatusCode.NotFound.Equals(response.StatusCode))
                     {
                         int pathLength = response.Request.Resource.Split('/').Count();
+                        bool isAWS = response.ResponseUri.Host.EndsWith("s3.amazonaws.com");
+                        bool isVirtual = isAWS  && !(response.ResponseUri.Host.StartsWith("s3.amazonaws.com"));
                         if (pathLength > 1)
                         {
                             errorResponse.Code = "NoSuchKey";
@@ -552,10 +554,20 @@ namespace Minio
                         }
                         else if (pathLength == 1)
                         {
-                            errorResponse.Code = "NoSuchBucket";
-                            var bucketName = response.Request.Resource.Split('/')[0];
-                            BucketRegionCache.Instance.Remove(bucketName);
-                            e = new BucketNotFoundException(bucketName, "Not found.");
+                            var resource = response.Request.Resource.Split('/')[0];
+
+                            if (isAWS && isVirtual)
+                            {
+                                errorResponse.Code = "NoSuchKey";
+                                e = new ObjectNotFoundException(resource, "Not found.");
+                            }
+                            else
+                            {
+                                errorResponse.Code = "NoSuchBucket";
+                                BucketRegionCache.Instance.Remove(resource);
+                                e = new BucketNotFoundException(resource, "Not found.");
+                            }
+                           
                         }
                         else
                         {
