@@ -21,5 +21,6 @@ namespace Minio.Functional.Tests
             }
             return result.ToString();
         }
+       
     }
 }

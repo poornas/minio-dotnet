@@ -158,9 +158,12 @@ namespace Minio.Functional.Tests
                 PresignedPutObject_Test1(minioClient).Wait();
 
                 END WORKING TESTS
+
                 */
+                MakeBucket_Test3(minioClient).Wait();
+
                 // TODO: 
-                PresignedPostPolicy_Test1(minioClient);
+                //PresignedPostPolicy_Test1(minioClient);
                 //GetBucketPolicy_Test1(minioClient).Wait();
                 /*
                            
@@ -234,9 +237,10 @@ namespace Minio.Functional.Tests
             }
             catch (MinioException ex)
             {
-                Assert.AreEqual<string>(ex.message, "The requested bucket name is not available. The bucket namespace is shared by all users of the system. Please select a different name and try again.");
+                Assert.AreEqual<string>(ex.message, "Your previous request to create the named bucket succeeded and you already own it.");
             }
-         
+            Console.Out.WriteLine("Test 3 : MakeBucketAsync with region complete");
+
         }
         private async static Task MakeBucket_Test4(MinioClient minio)
         {
@@ -902,9 +906,6 @@ namespace Minio.Functional.Tests
             }
 
             var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
-
-
-
         }
         private async static Task PresignedPostPolicy_Test1(MinioClient minio)
         {
@@ -964,7 +965,7 @@ namespace Minio.Functional.Tests
             Console.Out.WriteLine("Test1: PresignedPostPolicyAsync Complete");
            
         }
-        private async static Task RemoveIncompleteUpload(MinioClient minio, string bucketName,string objectName)
+        private async static Task RemoveIncompleteUpload_Test1(MinioClient minio, string bucketName,string objectName)
         {
 
         }
@@ -991,7 +992,7 @@ namespace Minio.Functional.Tests
 
         }
 
-        // Set a policy for given bucket
+        // Get a policy for given bucket
         private async static Task GetBucketPolicy_Test1(MinioClient minio)
         {
             Console.Out.WriteLine("Test1: GetPolicyAsync ");

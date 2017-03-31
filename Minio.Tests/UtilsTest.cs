@@ -3,6 +3,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
 using System.Collections.Generic;
 using Minio.Helper;
+using Minio.DataModel;
+using System.Xml.Serialization;
+using System.IO;
 
 namespace Minio.Tests
 {
@@ -46,18 +49,31 @@ namespace Minio.Tests
             }
         }
         [TestMethod]
-        [ExpectedException(typeof(InvalidObjectNameException))]
         public void TestEmptyObjectName()
         {
-            utils.validateObjectName("");
+            try
+            {
+                utils.validateObjectName("");
+            }
+            catch (InvalidObjectNameException ex)
+            {
+                Assert.AreEqual(ex.message, "Object name cannot be empty.");
+            }
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidObjectNameException))]
         public void TestVeryLongObjectName()
         {
-            string objName = TestHelper.GetRandomName(1025);
-            utils.validateObjectName(objName);
+            try
+            {
+                string objName = TestHelper.GetRandomName(1025);
+                utils.validateObjectName(objName);
+            }
+            catch (InvalidObjectNameException ex)
+            {
+                Assert.AreEqual(ex.message, "Object name cannot be greater than 1024 characters.");
+            }
+            
         }
 
         [TestMethod]
@@ -74,10 +90,16 @@ namespace Minio.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(EntityTooLargeException))]
         public void TestInvalidPartSize()
         {
-            Object multiparts = utils.CalculateMultiPartSize(5000000000000000000);
+            try
+            {
+                Object multiparts = utils.CalculateMultiPartSize(5000000000000000000);
+            }
+            catch (EntityTooLargeException ex)
+            {
+                Assert.AreEqual(ex.message, "Your proposed upload size 5000000000000000000 exceeds the maximum allowed object size " + Constants.MaxMultipartPutObjectSize);
+            }
         }
 
         [TestMethod]
@@ -129,12 +151,21 @@ namespace Minio.Tests
         [TestMethod]
         public void TestIsAmazonChinaEndpoint()
         {
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.amazonaws.com"));
-            Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("play.minio.io"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("192.168.12.1"));
-            Assert.IsFalse(s3utils.IsAmazonEndPoint("storage.googleapis.com"));
+            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.amazonaws.com"));
+            Assert.IsTrue(s3utils.IsAmazonChinaEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("s3.us-west-1amazonaws.com"));
+            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("play.minio.io"));
+            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("192.168.12.1"));
+            Assert.IsFalse(s3utils.IsAmazonChinaEndPoint("storage.googleapis.com"));
+        }
+        [TestMethod]
+        public  void TestBucketConfiguration()
+        {
+            CreateBucketConfiguration config = new CreateBucketConfiguration("us-west-1");
+            XmlSerializer xs = new XmlSerializer(typeof(CreateBucketConfiguration));
+            StringWriter writer = new StringWriter();
+            xs.Serialize(writer, config);
+            Console.Out.WriteLine(writer.ToString());
         }
     }
 }

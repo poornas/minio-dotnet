@@ -1,6 +1,10 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Minio.DataModel;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace Minio.Tests
 {
@@ -21,5 +25,6 @@ namespace Minio.Tests
             }
             return result.ToString();
         }
+       
     }
 }
