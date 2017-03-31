@@ -22,6 +22,8 @@ using Minio.DataModel;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
+using System.Net.Http;
+using System.Collections.Generic;
 
 namespace Minio.Functional.Tests
 
@@ -67,8 +69,8 @@ namespace Minio.Functional.Tests
             if (useAWS && Environment.GetEnvironmentVariable("AWS_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("AWS_ENDPOINT");
-                accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY");
-                secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_KEY");
+                accessKey = Environment.GetEnvironmentVariable("MY_AWS_ACCESS_KEY");
+                secretKey = Environment.GetEnvironmentVariable("MY_AWS_SECRET_KEY");
             }
             else
             {
@@ -157,7 +159,8 @@ namespace Minio.Functional.Tests
 
                 END WORKING TESTS
                 */
-
+                // TODO: 
+                PresignedPostPolicy_Test1(minioClient);
                 //GetBucketPolicy_Test1(minioClient).Wait();
                 /*
                            
@@ -171,15 +174,11 @@ namespace Minio.Functional.Tests
                               // Get the policy for given bucket
                                 GetBucketPolicy(minioClient, bucketName).Wait();
 
-                                // Get the presigned url for a GET object request
-                                PresignedGetObject(minioClient, bucketName, objectName).Wait();
-
+              
                                 // Get the presigned POST policy curl url
                                 PresignedPostPolicy(minioClient).Wait();
 
-                                // Get the presigned url for a PUT object request
-                                PresignedPutObject(minioClient, bucketName, objectName).Wait();
-
+        
 
                                   */
                 Console.ReadLine();
@@ -851,6 +850,7 @@ namespace Minio.Functional.Tests
             fileStream.Dispose();
             FileInfo writtenInfo = new FileInfo(downloadFile);
             long file_read_size = writtenInfo.Length;
+            //Compare size of file downloaded  with presigned curl request and actual object size on server
             Assert.AreEqual(file_read_size, stats.Size);
 
             await minio.RemoveObjectAsync(bucketName, objectName);
@@ -868,13 +868,12 @@ namespace Minio.Functional.Tests
             string objectName = GetRandomName(10);
             string fileName = CreateFile(1 * MB);
             await Setup_Test(minio, bucketName);
-          
             //Upload with presigned url
             string presigned_url = await minio.PresignedPutObjectAsync(bucketName, objectName, 1000);
             await UploadObjectAsync(presigned_url, fileName);
-
+            //Get stats for object from server
             ObjectStat stats = await minio.StatObjectAsync(bucketName, objectName);
-
+            //Compare with file used for upload
             FileInfo writtenInfo = new FileInfo(fileName);
             long file_written_size = writtenInfo.Length;
             Assert.AreEqual(file_written_size, stats.Size);
@@ -906,6 +905,64 @@ namespace Minio.Functional.Tests
 
 
 
+        }
+        private async static Task PresignedPostPolicy_Test1(MinioClient minio)
+        {
+            Console.Out.WriteLine("Test1: PresignedPostPolicyAsync");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(1 * MB);
+
+
+            try
+            {
+                await Setup_Test(minio, bucketName);
+                await minio.PutObjectAsync(bucketName,
+                            objectName,
+                            fileName);
+           
+                // Generate presigned post policy url
+                PostPolicy form = new PostPolicy();
+                DateTime expiration = DateTime.UtcNow;
+                form.SetExpires(expiration.AddDays(10));
+                form.SetKey(objectName);
+                form.SetBucket(bucketName);
+                var pairs = new List<KeyValuePair<string, string>>();
+                string url = "https://s3.amazonaws.com/" + bucketName  ;
+                Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(form);
+                var httpClient = new HttpClient();
+
+                using (var stream = File.OpenRead(fileName))
+                 {
+                    MultipartFormDataContent multipartContent = new MultipartFormDataContent();
+                    multipartContent.Add(new StreamContent(stream), fileName,objectName);
+                    multipartContent.Add(new FormUrlEncodedContent(pairs));
+                    var response = await httpClient.PostAsync(url, multipartContent );
+                    response.EnsureSuccessStatusCode();
+                }
+                
+                // Validate
+                PolicyType policy = await minio.GetPolicyAsync(bucketName, objectName.Substring(5));
+                Assert.AreEqual(policy.GetType(), PolicyType.READ_ONLY);
+                await minio.RemoveObjectAsync(bucketName, objectName);
+
+                await TearDown(minio, bucketName);
+                File.Delete(fileName);
+            }
+            catch (Exception e)
+            {
+                Console.Out.WriteLine("Exception ", e.Message);
+            }
+         
+            Console.Out.WriteLine("Test1: PresignedPostPolicyAsync Complete");
+
+   
+            await minio.RemoveObjectAsync(bucketName, objectName);
+
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test1: PresignedPostPolicyAsync Complete");
+           
         }
         private async static Task RemoveIncompleteUpload(MinioClient minio, string bucketName,string objectName)
         {
@@ -955,22 +1012,6 @@ namespace Minio.Functional.Tests
             await TearDown(minio, bucketName);
             File.Delete(fileName);
             Console.Out.WriteLine("Test1: GetPolicyAsync Complete");
-
-        }
-        private async static Task GetBucketPolicy(MinioClient minio,  string bucketName)
-        {
-
-        }
-        private async static Task PresignedGetObject(MinioClient minio, string bucketName,string objectName)
-        {
-
-        }
-        private async static Task PresignedPostPolicy(MinioClient minio)
-        {
-
-        }
-        private async static Task PresignedPutObject(MinioClient minio, string bucketName, string objectName)
-        {
 
         }
 
