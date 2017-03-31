@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Minio.Exceptions;
+using System.Collections.Generic;
+using Minio.Helper;
 
 namespace Minio.Tests
 {
@@ -10,62 +12,129 @@ namespace Minio.Tests
         [TestMethod]
         public void TestValidBucketName()
         {
-            object[][] testCases =
-           {
-                new Object[] {
-                          new Object[]{".mybucket"},
-                          new Object[] {new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.") }
-                },
-                     new Object[] {
-                          new Object[]{"mybucket."},
-                          new Object[] {new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.") }
-                },
-                     new Object[] {
-                          new Object[]{""},
-                          new Object[] {new InvalidBucketNameException("", "Bucket name cannot be empty.") }
-                },
-                       new Object[] {
-                          new Object[]{"mk"},
-                          new Object[] {new InvalidBucketNameException("mk", "Bucket name cannot be smaller than 3 characters.") }
-                },
-                         new Object[] {
-                          new Object[]{"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345"},
-                          new Object[] {new InvalidBucketNameException("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345", "Bucket name cannot be greater than 63 characters.") }
-                },  new Object[] {
-                          new Object[]{"my..bucket"},
-                          new Object[] {new InvalidBucketNameException("my..bucket", "Bucket name cannot have successive periods.") }
-                },  new Object[] {
-                          new Object[]{"MyBucket"},
-                          new Object[] {new InvalidBucketNameException("MyBucket", "Bucket name cannot have upper case characters") }
-                },  new Object[] {
-                          new Object[]{"my!bucket"},
-                          new Object[] {new InvalidBucketNameException(".my!bucket", "Bucket name contains invalid characters.") }
-                },  new Object[] {
-                          new Object[]{"mybucket"},
-                          new Object[] {null }
-                },  new Object[] {
-                          new Object[]{"mybucket1234dhdjkshdkshdkshdjkshdkjshfkjsfhjkshsjkhjkhfkjd"},
-                          new Object[] {null}
-                },
-           };
-            for (int i = 0; i < testCases.Length; i++)
+        var testCases = new List<KeyValuePair<string, InvalidBucketNameException>>()
             {
-                Object[] testdata = testCases[i];
-                Object[] testCase = (Object[])testdata[0];
-                Object[] expectedValues = (Object[])testdata[1];
+              new KeyValuePair<string, InvalidBucketNameException>(".mybucket",new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
+              new KeyValuePair<string, InvalidBucketNameException>("mybucket.",new InvalidBucketNameException(".mybucket", "Bucket name cannot start or end with a '.' dot.")),
+              new KeyValuePair<string, InvalidBucketNameException>("",new InvalidBucketNameException("", "Bucket name cannot be empty.")),
+              new KeyValuePair<string, InvalidBucketNameException>("mk",new InvalidBucketNameException("mk", "Bucket name cannot be smaller than 3 characters.")),
+              new KeyValuePair<string, InvalidBucketNameException>("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345",new InvalidBucketNameException("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz123456789012345", "Bucket name cannot be greater than 63 characters.")),
+              new KeyValuePair<string, InvalidBucketNameException>("my..bucket",new InvalidBucketNameException("my..bucket", "Bucket name cannot have successive periods.")),
+              new KeyValuePair<string, InvalidBucketNameException>("MyBucket",new InvalidBucketNameException("MyBucket", "Bucket name cannot have upper case characters")),
+              new KeyValuePair<string, InvalidBucketNameException>("my!bucket", new InvalidBucketNameException("my!bucket", "Bucket name contains invalid characters.")),
+              new KeyValuePair<string, InvalidBucketNameException>("mybucket", null ),
+              new KeyValuePair<string, InvalidBucketNameException>("mybucket1234dhdjkshdkshdkshdjkshdkjshfkjsfhjkshsjkhjkhfkjd",null ),
+            };
+         
+            foreach (KeyValuePair<string,InvalidBucketNameException> pair in testCases)
+            {
+                
+                string bucketName = (string)pair.Key;
+                InvalidBucketNameException expectedException = pair.Value;
                 try
                 {
-                    utils.validateBucketName((string)testCase[0]);
+                    utils.validateBucketName(bucketName);
                 }
                 catch (InvalidBucketNameException ex)
                 {
-                    Assert.AreEqual(ex.Message, ((InvalidBucketNameException)expectedValues[0]).Message);
+                    Assert.AreEqual(ex.Message, expectedException.Message);
                 }
                 catch (Exception e)
                 {
                     Assert.Fail();
                 }
             }
+        }
+        [TestMethod]
+        [ExpectedException(typeof(InvalidObjectNameException))]
+        public void TestEmptyObjectName()
+        {
+            utils.validateObjectName("");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidObjectNameException))]
+        public void TestVeryLongObjectName()
+        {
+            string objName = TestHelper.GetRandomName(1025);
+            utils.validateObjectName(objName);
+        }
+
+        [TestMethod]
+        public void TestObjectName()
+        {
+            string objName = TestHelper.GetRandomName(15);
+            utils.validateObjectName(objName);
+        }
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void TestEmptyFile()
+        {
+            utils.ValidateFile("");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EntityTooLargeException))]
+        public void TestInvalidPartSize()
+        {
+            Object multiparts = utils.CalculateMultiPartSize(5000000000000000000);
+        }
+
+        [TestMethod]
+        public void TestValidPartSize1()
+        {
+           // { partSize = 550502400, partCount = 9987, lastPartSize = 241172480 }
+            dynamic partSizeObject = utils.CalculateMultiPartSize(5497558138880);
+            double partSize = partSizeObject.partSize;
+            double partCount = partSizeObject.partCount;
+            double lastPartSize = partSizeObject.lastPartSize;
+            Assert.AreEqual(partSize, 550502400);
+            Assert.AreEqual(partCount, 9987);
+            Assert.AreEqual(lastPartSize, 241172480);
+        }
+
+        [TestMethod]
+        public void TestValidPartSize2()
+        {
+             dynamic partSizeObject = utils.CalculateMultiPartSize(5000000000);
+            double partSize = partSizeObject.partSize;
+            double partCount = partSizeObject.partCount;
+            double lastPartSize = partSizeObject.lastPartSize;
+            Assert.AreEqual(partSize, 5242880);
+            Assert.AreEqual(partCount, 954);
+            Assert.AreEqual(lastPartSize, 3535360);
+        }
+
+        [TestMethod]
+        public void TestCaseInsensitiveContains()
+        {
+            Assert.IsTrue(utils.CaseInsensitiveContains("AbCdEF", "ef"));
+            Assert.IsTrue(utils.CaseInsensitiveContains("ef", ""));
+            Assert.IsTrue(utils.CaseInsensitiveContains("abcdef", "ef"));
+            Assert.IsTrue(utils.CaseInsensitiveContains("AbCdEF", "Bc"));
+            Assert.IsFalse(utils.CaseInsensitiveContains("abc", "xyz"));
+
+        }
+        [TestMethod]
+        public void TestIsAmazonEndpoint()
+        {
+            Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.amazonaws.com"));
+            Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("play.minio.io"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("192.168.12.1"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("storage.googleapis.com"));
+        }
+
+        [TestMethod]
+        public void TestIsAmazonChinaEndpoint()
+        {
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.amazonaws.com"));
+            Assert.IsTrue(s3utils.IsAmazonEndPoint("s3.cn-north-1.amazonaws.com.cn"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("s3.us-west-1amazonaws.com"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("play.minio.io"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("192.168.12.1"));
+            Assert.IsFalse(s3utils.IsAmazonEndPoint("storage.googleapis.com"));
         }
     }
 }

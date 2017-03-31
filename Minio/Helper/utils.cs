@@ -21,6 +21,7 @@ using Minio.Exceptions;
 using System.IO;
 using Microsoft.Win32;
 using Minio.Helper;
+using System.Dynamic;
 
 namespace Minio
 {
@@ -159,7 +160,7 @@ namespace Minio
             File.Move(sourceFileName, destFileName);
         }
         
-        internal static bool isSupersetOf(IList<string> l1, IList<string> l2)
+        public static bool isSupersetOf(IList<string> l1, IList<string> l2)
         {
             if (l2 == null)
             {
@@ -171,7 +172,7 @@ namespace Minio
             }
             return (!l2.Except(l1).Any());
         }
-        internal static bool CaseInsensitiveContains(string text, string value,
+        public static bool CaseInsensitiveContains(string text, string value,
     StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
         {
             return text.IndexOf(value, stringComparison) >= 0;
@@ -197,12 +198,11 @@ namespace Minio
             partSize = (double)Math.Ceiling((decimal)partSize / Constants.MinimumPartSize) * Constants.MinimumPartSize;
             double partCount = (double)Math.Ceiling(size / partSize);
             double lastPartSize = size - (partCount - 1) * partSize;
-            return new
-            {
-                partSize = partSize,
-                partCount = partCount,
-                lastPartSize = lastPartSize
-            };
+            dynamic obj = new ExpandoObject();
+            obj.partSize = partSize;
+            obj.partCount = partCount;
+            obj.lastPartSize = lastPartSize;
+            return obj;
         }
     }
 }
