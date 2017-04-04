@@ -17,9 +17,9 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Policy
 {
-    internal class Resources : HashSet<string>
+    public class Resources : HashSet<string>
     {
         public Resources(string resource=null) : base()
         {

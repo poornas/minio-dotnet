@@ -18,10 +18,10 @@ using System.Linq;
 
 namespace Minio.DataModel
 {
-    internal class ConditionKeyMap:Dictionary<string,ISet<string>>
+    public class ConditionKeyMap : Dictionary<string, ISet<string>>
     {
-        public ConditionKeyMap() : base() {}
-        public ConditionKeyMap(ConditionKeyMap map = null) : base(map) {}
+        public ConditionKeyMap() : base() { }
+        public ConditionKeyMap(ConditionKeyMap map = null) : base(map) { }
 
         public ConditionKeyMap(string key, string value)
         {
@@ -52,7 +52,7 @@ namespace Minio.DataModel
             this[key] = existingValue;
             return existingValue;
         }
-        public void remove(string key,ISet<string> value)
+        public void remove(string key, ISet<string> value)
         {
             ISet<string> existingValue;
             this.TryGetValue(key, out existingValue);

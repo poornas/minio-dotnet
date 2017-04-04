@@ -42,7 +42,7 @@ namespace Minio.Tests
                 {
                     Assert.AreEqual(ex.Message, expectedException.Message);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Assert.Fail();
                 }

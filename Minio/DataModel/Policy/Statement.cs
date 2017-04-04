@@ -17,13 +17,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Minio.Policy;
-using Minio.DataModel.Policy;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Policy
 {
 
-    internal class Statement
+    public class Statement
     {
         [JsonProperty("Action")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]

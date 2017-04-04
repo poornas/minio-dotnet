@@ -22,14 +22,13 @@ using Newtonsoft.Json.Linq;
 
 namespace Minio.DataModel.Policy
 {
-    class StatementJsonConverter : JsonConverter
+    public class StatementJsonConverter : JsonConverter
     {
         
         public override bool CanConvert(Type objectType)
         {
             return typeof(Statement).GetTypeInfo().IsInstanceOfType(objectType);
-            
-           //KP return typeof(Statement).IsAssignableFrom(objectType);
+         
         }
         
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)

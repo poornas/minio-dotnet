@@ -341,7 +341,7 @@ namespace Minio
         /// <param name="errorHandlers">List of handlers to override default handling</param>
         /// <param name="request">request</param>
         /// <returns>IRESTResponse</returns>
-        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request)
+        internal async Task<IRestResponse> ExecuteTaskAsync(IEnumerable<ApiResponseErrorHandlingDelegate> errorHandlers, IRestRequest request, CancellationToken cancellationToken=default(CancellationToken))
         {
             DateTime startTime = DateTime.Now;
             // Logs full url when HTTPtracing is enabled.
@@ -355,8 +355,9 @@ namespace Minio
                                             request, resp =>
                                             {
                                                 tcs.SetResult(resp);
-
                                             });
+            cancellationToken.ThrowIfCancellationRequested();
+
             IRestResponse response = await tcs.Task;
             HandleIfErrorResponse(response, errorHandlers, startTime);
             return response;

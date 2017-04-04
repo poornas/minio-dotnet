@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Minio.Policy
+namespace Minio.DataModel.Policy
 {
-    class PolicyConstants
+    public class PolicyConstants
     {
         // Resource prefix for all aws resources.
         public static readonly String AWS_RESOURCE_PREFIX = "arn:aws:s3:::";

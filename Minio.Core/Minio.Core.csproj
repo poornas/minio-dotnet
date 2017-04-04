@@ -78,7 +78,6 @@
 
   <ItemGroup>
     <Folder Include="ApiEndpoints\" />
-    <Folder Include="DataModel\Policy\" />
     <Folder Include="Helper\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>

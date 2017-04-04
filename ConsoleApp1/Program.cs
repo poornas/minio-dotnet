@@ -50,8 +50,6 @@ namespace ConsoleApp1
         {
             try
             {
-                string existingObject = "copyrighted_copy.txt";
-
                 string presigned_get_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000);
                 Console.Out.WriteLine("PRESIGNED_GET_URL:" + presigned_get_url);
 
