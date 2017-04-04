@@ -18,46 +18,39 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Minio.DataModel.Policy
 {
-    public class ResourceJsonConverter : JsonConverter
+
+    public class ConditionKeyMapConverter  : JsonConverter
     {
+        private bool foundKey = false;
+        private readonly Type[] _types = { typeof(ConditionKeyMap) };
         public override bool CanConvert(Type objectType)
         {
-            throw new NotImplementedException();
+            return _types.Any(t => t == objectType);
         }
+
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            object retVal = new Object();
-            if (reader.TokenType == JsonToken.StartObject)
+           if (reader.TokenType == JsonToken.StartArray)
             {
-                Resources instance = (Resources)serializer.Deserialize(reader, typeof(Resources));
-                retVal =  instance ;
+                JArray jArray = JArray.Load(reader);
 
-            }
-            else if (reader.TokenType == JsonToken.String)
-            {
-                Resources instance = new Resources();
-                instance.Add(reader.Value.ToString());
-                retVal = instance;
-                
-            }
-            else if (reader.TokenType == JsonToken.StartArray)
-            {
-                // retVal = serializer.Deserialize(reader, objectType);
-                JArray array = JArray.Load(reader);
-                var rs = array.ToObject<ISet<string>>();
-                Resources instance = new Resources();
-                foreach (var el in rs)
+                List<StringSet> target = new List<StringSet>();
+
+                serializer.Populate(jArray.CreateReader(), target);
+                ConditionKeyMap ckmap = new ConditionKeyMap();
+                foreach (StringSet set in target)
                 {
-                    instance.Add(el);
+                    Console.Out.WriteLine(set);
+                    //TODO: Populate k-v pair..
                 }
-                retVal = instance;
+                return ckmap;
             }
-            return retVal;
-
+            return new ConditionKeyMap();
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -69,3 +62,4 @@ namespace Minio.DataModel.Policy
         }
     }
 }
+

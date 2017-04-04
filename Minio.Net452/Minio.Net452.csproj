@@ -143,8 +143,14 @@
     <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMap.cs">
       <Link>DataModel\Policy\ConditionKeyMap.cs</Link>
     </Compile>
+    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMapConverter.cs">
+      <Link>DataModel\Policy\ConditionKeyMapConverter.cs</Link>
+    </Compile>
     <Compile Include="..\Minio\DataModel\Policy\ConditionMap.cs">
       <Link>DataModel\Policy\ConditionMap.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\DataModel\Policy\ConditionMapConverter.cs">
+      <Link>DataModel\Policy\ConditionMapConverter.cs</Link>
     </Compile>
     <Compile Include="..\Minio\DataModel\Policy\PolicyConstants.cs">
       <Link>DataModel\Policy\PolicyConstants.cs</Link>
@@ -172,6 +178,12 @@
     </Compile>
     <Compile Include="..\Minio\DataModel\Policy\StatementJsonConverter.cs">
       <Link>DataModel\Policy\StatementJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\DataModel\Policy\StringOrISetConverter.cs">
+      <Link>DataModel\Policy\StringOrISetConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Minio\DataModel\Policy\StringSet.cs">
+      <Link>DataModel\Policy\StringSet.cs</Link>
     </Compile>
     <Compile Include="..\Minio\DataModel\PostPolicy.cs">
       <Link>DataModel\PostPolicy.cs</Link>

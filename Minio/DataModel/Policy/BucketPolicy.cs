@@ -20,7 +20,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using Minio.Policy;
+using Minio.DataModel.Policy;
 
 namespace Minio.DataModel
 {

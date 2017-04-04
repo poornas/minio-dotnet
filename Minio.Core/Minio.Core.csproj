@@ -32,7 +32,9 @@
     <Compile Include="..\Minio\DataModel\Policy\ActionJsonConverter.cs" Link="DataModel\Policy\ActionJsonConverter.cs" />
     <Compile Include="..\Minio\DataModel\Policy\BucketPolicy.cs" Link="DataModel\Policy\BucketPolicy.cs" />
     <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMap.cs" Link="DataModel\Policy\ConditionKeyMap.cs" />
+    <Compile Include="..\Minio\DataModel\Policy\ConditionKeyMapConverter.cs" Link="DataModel\Policy\ConditionKeyMapConverter.cs" />
     <Compile Include="..\Minio\DataModel\Policy\ConditionMap.cs" Link="DataModel\Policy\ConditionMap.cs" />
+    <Compile Include="..\Minio\DataModel\Policy\ConditionMapConverter.cs" Link="DataModel\Policy\ConditionMapConverter.cs" />
     <Compile Include="..\Minio\DataModel\Policy\PolicyConstants.cs" Link="DataModel\Policy\PolicyConstants.cs" />
     <Compile Include="..\Minio\DataModel\Policy\PolicyType.cs" Link="DataModel\Policy\PolicyType.cs" />
     <Compile Include="..\Minio\DataModel\Policy\Principal.cs" Link="DataModel\Policy\Principal.cs" />
@@ -42,6 +44,8 @@
     <Compile Include="..\Minio\DataModel\Policy\SingleOrArrayConverter.cs" Link="DataModel\Policy\SingleOrArrayConverter.cs" />
     <Compile Include="..\Minio\DataModel\Policy\Statement.cs" Link="DataModel\Policy\Statement.cs" />
     <Compile Include="..\Minio\DataModel\Policy\StatementJsonConverter.cs" Link="DataModel\Policy\StatementJsonConverter.cs" />
+    <Compile Include="..\Minio\DataModel\Policy\StringOrISetConverter.cs" Link="DataModel\Policy\StringOrISetConverter.cs" />
+    <Compile Include="..\Minio\DataModel\Policy\StringSet.cs" Link="DataModel\Policy\StringSet.cs" />
     <Compile Include="..\Minio\DataModel\PostPolicy.cs" Link="DataModel\PostPolicy.cs" />
     <Compile Include="..\Minio\DataModel\Prefix.cs" Link="DataModel\Prefix.cs" />
     <Compile Include="..\Minio\DataModel\Upload.cs" Link="DataModel\Upload.cs" />
@@ -78,7 +82,6 @@
 
   <ItemGroup>
     <Folder Include="ApiEndpoints\" />
-    <Folder Include="DataModel\Policy\" />
     <Folder Include="Helper\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>

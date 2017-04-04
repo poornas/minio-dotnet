@@ -16,9 +16,9 @@
 
 using System.Collections.Generic;
 
-namespace Minio.DataModel
+namespace Minio.DataModel.Policy
 {
-    internal class ConditionMap: Dictionary<string,ConditionKeyMap>
+    public class ConditionMap: Dictionary<string,ConditionKeyMap>
     {
         public ConditionMap() : base() { }
         public ConditionMap(ConditionMap map = null) : base(map) { }

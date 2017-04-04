@@ -18,44 +18,34 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Minio.DataModel.Policy
 {
-    public class ResourceJsonConverter : JsonConverter
+
+    public class ConditionMapConverter  : JsonConverter
     {
+        private readonly Type[] _types = { typeof(ConditionMap) };
         public override bool CanConvert(Type objectType)
         {
-            throw new NotImplementedException();
+            return _types.Any(t => t == objectType);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             object retVal = new Object();
-            if (reader.TokenType == JsonToken.StartObject)
-            {
-                Resources instance = (Resources)serializer.Deserialize(reader, typeof(Resources));
-                retVal =  instance ;
 
-            }
-            else if (reader.TokenType == JsonToken.String)
+          
+            if (reader.TokenType == JsonToken.String)
             {
-                Resources instance = new Resources();
+               
+                Console.Out.WriteLine(reader.Value.ToString());
+                ISet<string> instance = new HashSet<string>();
                 instance.Add(reader.Value.ToString());
                 retVal = instance;
-                
+               
             }
-            else if (reader.TokenType == JsonToken.StartArray)
-            {
-                // retVal = serializer.Deserialize(reader, objectType);
-                JArray array = JArray.Load(reader);
-                var rs = array.ToObject<ISet<string>>();
-                Resources instance = new Resources();
-                foreach (var el in rs)
-                {
-                    instance.Add(el);
-                }
-                retVal = instance;
-            }
+        
             return retVal;
 
         }
@@ -69,3 +59,4 @@ namespace Minio.DataModel.Policy
         }
     }
 }
+
