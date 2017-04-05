@@ -21,6 +21,7 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Minio.DataModel.Policy;
+using Newtonsoft.Json.Serialization;
 
 namespace Minio.DataModel
 {
@@ -51,10 +52,12 @@ namespace Minio.DataModel
         {
             string toparse = new StreamReader(reader).ReadToEnd();
             JObject jsonData = JObject.Parse(toparse);
+            ITraceWriter traceWriter = new MemoryTraceWriter();
 
-            BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse);
+            BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse, new JsonSerializerSettings { TraceWriter = traceWriter } );
+            Console.Out.WriteLine(traceWriter);
             bucketPolicy.bucketName = bucketName;
-
+            
             return bucketPolicy;
         }
 
@@ -111,7 +114,7 @@ namespace Minio.DataModel
                 if (prefix != null && prefix.Length != 0)
                 {
                     ConditionKeyMap map = new ConditionKeyMap();
-                    map.put("s3:prefix", prefix);
+                    map.Put("s3:prefix", prefix);
                     statement.conditions = new ConditionMap("StringEquals", map);
                 }
 
@@ -389,7 +392,7 @@ namespace Minio.DataModel
 
                     if (conditions != null && statement.conditions != null)
                     {
-                        conditions.putAll(statement.conditions);
+                        conditions.PutAll(statement.conditions);
                         return;
                     }
                 }

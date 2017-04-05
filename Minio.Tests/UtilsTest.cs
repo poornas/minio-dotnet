@@ -83,10 +83,15 @@ namespace Minio.Tests
             utils.validateObjectName(objName);
         }
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void TestEmptyFile()
         {
-            utils.ValidateFile("");
+            try
+            {
+                utils.ValidateFile("");
+            }
+            catch (ArgumentException)
+            {
+            }
         }
 
         [TestMethod]

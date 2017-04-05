@@ -26,6 +26,7 @@ namespace Minio.DataModel.Policy
         [JsonProperty("Action")]
         [JsonConverter(typeof(SingleOrArrayConverter<string>))]
         public IList<string> actions { get;  set; }
+
         [JsonProperty("Condition")]
         public ConditionMap conditions { get;  set; }
 

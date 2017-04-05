@@ -29,8 +29,8 @@ namespace Minio.DataModel
                 this.Add(key, value);
             }
         }
-
-        public ConditionKeyMap put(string key, ConditionKeyMap value)
+        // Merge Condition Key map values.
+        public ConditionKeyMap Put(string key, ConditionKeyMap value)
         {
             ConditionKeyMap existingValue;
             base.TryGetValue(key, out existingValue);
@@ -42,17 +42,17 @@ namespace Minio.DataModel
             {
                 foreach (var item in value)
                 {
-                    existingValue.Add(item.Key, item.Value);
+                    existingValue.Put(item.Key, item.Value);
                 }
             }
             this[key] = existingValue;
             return existingValue;
         }
-        public void putAll(ConditionMap cmap)
+        public void PutAll(ConditionMap cmap)
         {
             foreach (var item in cmap)
             {
-                this[item.Key] = item.Value;
+                this.Put(item.Key, item.Value);
             }
         }
 

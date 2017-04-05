@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using Minio.DataModel.Policy;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Minio.DataModel
 {
+    [JsonConverter(typeof(ConditionKeyMapConverter))]
     public class ConditionKeyMap : Dictionary<string, ISet<string>>
     {
         public ConditionKeyMap() : base() { }
@@ -33,14 +36,19 @@ namespace Minio.DataModel
         {
             this.Add(key, value);
         }
-        public ISet<string> put(string key, string value)
+        public ISet<string> Put(string key, string value)
         {
-            ISet<string> set = new HashSet<string>();
-            set.Add(value);
-            this.Add(key, set);
-            return set;
+            ISet<string> existingValue;
+            this.TryGetValue(key, out existingValue);
+            if (existingValue == null)
+            {
+                existingValue = new HashSet<string>();
+            }
+            existingValue.Add(value);
+            this.Add(key, existingValue);
+            return existingValue;
         }
-        public ISet<string> put(string key, ISet<string> value)
+        public ISet<string> Put(string key, ISet<string> value)
         {
             ISet<string> existingValue;
             this.TryGetValue(key, out existingValue);
@@ -60,12 +68,15 @@ namespace Minio.DataModel
             {
                 return;
             }
-            existingValue.Except(value);
+            existingValue.ExceptWith(value);
             if (existingValue.Count == 0)
             {
                 this.Remove(key);
             }
-            this[key] = existingValue;
+            else
+            {
+                this[key] = existingValue;
+            }
         }
 
     }
