@@ -74,9 +74,9 @@ namespace Minio.DataModel.Policy
             return tglob || resource.EndsWith(parts[end]);
 
         }
-        public ISet<string> match(string resource)
+        public Resources Match(string resource)
         {
-            ISet<string> res = new HashSet<string>();
+            Resources res = new Resources();
             foreach (string pattern in this)
             {
                 if (matched(pattern,resource))

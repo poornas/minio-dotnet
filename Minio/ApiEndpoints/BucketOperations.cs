@@ -249,7 +249,7 @@ namespace Minio
                 var contentBytes = System.Text.Encoding.UTF8.GetBytes(response.Content);
 
                 var stream = new MemoryStream(contentBytes);
-                policy = BucketPolicy.parseJson(stream, bucketName);
+                policy = BucketPolicy.ParseJson(stream, bucketName);
 
             }
             catch (ErrorResponseException e)
@@ -280,7 +280,7 @@ namespace Minio
         public async Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix = "", CancellationToken cancellationToken = default(CancellationToken))
         {
             BucketPolicy policy = await GetPolicyAsync(bucketName, cancellationToken);
-            return policy.getPolicy(objectPrefix);
+            return policy.GetPolicy(objectPrefix);
         }
 
         /// <summary>
@@ -292,7 +292,7 @@ namespace Minio
         private async Task setPolicyAsync(string bucketName, BucketPolicy policy, CancellationToken cancellationToken = default(CancellationToken))
         {
 
-            string policyJson = policy.getJson();
+            string policyJson = policy.GetJson();
             var request = await this.CreateRequest(Method.PUT, bucketName,
                                            resourcePath: "?policy",
                                            contentType: "application/json",
@@ -319,7 +319,7 @@ namespace Minio
                 return;
             }
 
-            policy.setPolicy(policyType, objectPrefix);
+            policy.SetPolicy(policyType, objectPrefix);
 
             await setPolicyAsync(bucketName, policy, cancellationToken);
         }

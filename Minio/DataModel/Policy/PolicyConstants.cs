@@ -48,9 +48,9 @@ namespace Minio.DataModel.Policy
         // Read and write object actions.
         public static IList<string> READ_WRITE_OBJECT_ACTIONS()
         {
-            IList<string> res = new List<string>();
-            res.Union(READ_ONLY_OBJECT_ACTIONS);
-            res.Union(WRITE_ONLY_OBJECT_ACTIONS);
+            List<string> res = new List<string>();
+            res.AddRange(READ_ONLY_OBJECT_ACTIONS);
+            res.AddRange(WRITE_ONLY_OBJECT_ACTIONS);
             return res;
         }
         // All valid bucket and object actions.
@@ -58,10 +58,10 @@ namespace Minio.DataModel.Policy
         public static List<string> VALID_ACTIONS()
         {
             List<string> res = new List<string>();
-            res.Union(COMMON_BUCKET_ACTIONS);
-            res.Union(READ_ONLY_BUCKET_ACTIONS);
-            res.Union(WRITE_ONLY_BUCKET_ACTIONS);
-            res.Union(READ_WRITE_OBJECT_ACTIONS());
+            res.AddRange(COMMON_BUCKET_ACTIONS);
+            res.AddRange(READ_ONLY_BUCKET_ACTIONS);
+            res.AddRange(WRITE_ONLY_BUCKET_ACTIONS);
+            res.AddRange(READ_WRITE_OBJECT_ACTIONS());
             return res;
         }
 

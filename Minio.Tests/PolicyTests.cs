@@ -1,199 +1,245 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minio.DataModel;
-using Minio.DataModel.Policy;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Json;
-using System.Text;
+using Minio.DataModel.Policy;
+using Minio.DataModel;
+using Newtonsoft.Json;
 
 namespace Minio.Tests
 {
     [TestClass]
     public class PolicyTests
     {
-
-        [TestMethod]
-        public void TestConditionKeyMapAdd()
-        {
-            var testCases = new List<KeyValuePair<Tuple<string, HashSet<string>>, string>>()
-            {
-                // Add new k-v pair
-               new KeyValuePair<Tuple<string, HashSet<string>>, string>(new Tuple<string,HashSet<string>>("s3:prefix",new HashSet<string>(){"hello" }), @"{""s3:prefix"":[""hello""]}" ),
-               // Add existing k-v pair
-               new KeyValuePair<Tuple<string, HashSet<string>>, string>(new Tuple<string,HashSet<string>>("s3:prefix",new HashSet<string>(){"hello" }), @"{""s3:prefix"":[""hello""]}" ),
-               // Add existing key and not value
-               new KeyValuePair<Tuple<string, HashSet<string>>, string>(new Tuple<string,HashSet<string>>("s3:prefix",new HashSet<string>(){"world" }), @"{""s3:prefix"":[""hello"", ""world""]}" ),
-
-            };
-            ConditionKeyMap cmap = new ConditionKeyMap();
-            int index = 0;
-            foreach (KeyValuePair<Tuple<string, HashSet<string>>, string> pair in testCases)
-            {
-                try
-                {
-                    index += 1;
-                    var testcase = pair.Key;
-                    string prefix = testcase.Item1;
-                    HashSet<string> stringSet = testcase.Item2;
-                    string expectedConditionKMap = pair.Value;
-                    cmap.Add(prefix, stringSet);
-                    string cmpstring = JsonConvert.SerializeObject(cmap, Formatting.None,
-                                  new JsonSerializerSettings
-                                  {
-                                      NullValueHandling = NullValueHandling.Ignore
-                                  });
-
-                    Assert.AreEqual(cmpstring, expectedConditionKMap);
-                }
-                catch (ArgumentException)
-                {
-                    Assert.AreNotEqual(index, 1);
-                }
-               
-               
-            }
-        }
-
-        [TestMethod]
-        public void TestConditionKeyMapRemove()
-        {
-            var testCases = new List<KeyValuePair<Tuple<string, HashSet<string>>, string>>()
-            {
-                // Add new k-v pair
-               new KeyValuePair<Tuple<string, HashSet<string>>, string>(new Tuple<string,HashSet<string>>("s3:myprefix",new HashSet<string>(){"hello" }), @"{""s3:prefix"":[""hello"",""world""]}" ),
-               // Add existing k-v pair
-               new KeyValuePair<Tuple<string, HashSet<string>>, string>(new Tuple<string,HashSet<string>>("s3:prefix",new HashSet<string>(){"hello" }), @"{""s3:prefix"":[""world""]}" ),
-               // Add existing key and not value
-               new KeyValuePair<Tuple<string, HashSet<string>>, string>(new Tuple<string,HashSet<string>>("s3:prefix",new HashSet<string>(){"world" }), @"{}" ),
-
-            };
-            ConditionKeyMap cmap = new ConditionKeyMap();
-            cmap.Add("s3:prefix", new HashSet<string>() {"hello" , "world" });
-
-            int index = 0;
-            foreach (KeyValuePair<Tuple<string, HashSet<string>>, string> pair in testCases)
-            {
-                try
-                {
-                    index += 1;
-                    var testcase = pair.Key;
-                    string prefix = testcase.Item1;
-                    HashSet<string> stringSet = testcase.Item2;
-                    string expectedConditionKMap = pair.Value;
-                    cmap.remove(prefix, stringSet);
-                    string cmpstring = JsonConvert.SerializeObject(cmap, Formatting.None,
-                                  new JsonSerializerSettings
-                                  {
-                                      NullValueHandling = NullValueHandling.Ignore
-                                  });
-
-                    Assert.AreEqual(cmpstring, expectedConditionKMap);
-                }
-                catch (ArgumentException)
-                {
-                    Assert.AreNotEqual(index, 1);
-                }
-
-
-            }
-        }
-
-        [TestMethod]
-        // Tests if condition key map merges existing values 
-        public void TestConditionKeyMapPut()
-        {
-            ConditionKeyMap cmap1 = new ConditionKeyMap();
-            cmap1.Add("s3:prefix", new HashSet<string>() { "hello" });
-
-            ConditionKeyMap cmap2 = new ConditionKeyMap();
-            cmap2.Add("s3:prefix", new HashSet<string>() { "world" });
-
-            ConditionKeyMap cmap3 = new ConditionKeyMap();
-            cmap3.Add("s3:myprefix", new HashSet<string>() { "world" });
-
-            ConditionKeyMap cmap4 = new ConditionKeyMap();
-            cmap4.Add("s3:prefix", new HashSet<string>() { "hello" });
-            var testCases = new List<KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string>>()
-            {
-                // Both args are empty
-               new KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string>(Tuple.Create(new ConditionKeyMap(),new ConditionKeyMap()), @"{}" ),
-               // First arg empty
-               new KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string>(Tuple.Create(new ConditionKeyMap(),cmap1), @"{""s3:prefix"":[""hello""]}" ),
-               //Second arg empty
-               new KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string>(Tuple.Create(cmap1,new ConditionKeyMap()), @"{""s3:prefix"":[""hello""]}" ),
-               //Both args have same value
-               new KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string>(Tuple.Create(cmap1,cmap4), @"{""s3:prefix"":[""hello""]}"),
-               //Value of second arg will be merged
-               new KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string>(Tuple.Create(cmap1, cmap2), @"{""s3:prefix"":[""hello"",""world""]}" ),
-               //second arg will be added 
-               new KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string>(Tuple.Create(cmap1, cmap3), @"{""s3:prefix"":[""hello"",""world""],""s3:myprefix"":[""world""]}" ),
-
-            };
-         
-
-            int index = 0;
-            foreach (KeyValuePair<Tuple<ConditionKeyMap, ConditionKeyMap>, string> pair in testCases)
-            {
-                try
-                {
-                    index += 1;
-                    var testcase = pair.Key;
-                    ConditionKeyMap first = testcase.Item1;
-                    ConditionKeyMap second = testcase.Item2;
-                    string expectedConditionKMapJSON = pair.Value;
-                    foreach (KeyValuePair<string, ISet<string>> kvpair in second)
-                    {
-                        first.Put(kvpair.Key, kvpair.Value);
-                    }
-                    string cmpstring = JsonConvert.SerializeObject(first, Formatting.None,
-                                  new JsonSerializerSettings
-                                  {
-                                      NullValueHandling = NullValueHandling.Ignore
-                                  });
-
-                    Assert.AreEqual(cmpstring, expectedConditionKMapJSON);
-                }
-                catch (ArgumentException)
-                {
-                    Assert.Fail();
-                }
-
-
-            }
-        }
         [TestMethod]
         public void TestIfStatementIsValid()
         {
-            var testCases = new List<KeyValuePair<string, bool>>()
+            var testCases = new List<KeyValuePair<List<Object>, bool>>()
             {
-             new KeyValuePair<string, bool>("{}",true),
+             
+             // Empty statement and bucket name
+             new KeyValuePair<List<Object>, bool>(new List<Object>{null, null, null, null,null, null },false),
+            
+             // Empty statement 
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", null, null, null,null, null },false),
+              
+             // Empty bucketname
+             new KeyValuePair<List<Object>, bool>(new List<Object>{null, PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Allow",new Principal("*"),new Resources("arn:aws:s3:::mybucket"), null },false),
+            
+             // Statement with unknown actions
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", new List<string>() { "s3:ListBucketTypes" }, "Allow", new Principal("*"),new Resources("arn:aws:s3:::mybucket"), null },false),
+             // Statement with unknown effect
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Deny", new Principal("*"),new Resources("arn:aws:s3:::mybucket"), null },false),
+            
+             // Statement with nil Principal
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Allow", null,new Resources("arn:aws:s3:::mybucket"), null },false),
+            
+             // Statement with invalid Principal
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Allow", new Principal("arn:aws:iam::AccountNumberWithoutHyphens:root"),new Resources("arn:aws:s3:::mybucket"), null },false),
+           
+             // Statement with different bucketname in resource 
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Allow", new Principal("*"),new Resources("arn:aws:s3:::bucket"), null },false),
+             // Statement with incorrect bucketname in resource and suffixed string
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Allow", new Principal("*"), new Resources("arn:aws:s3:::mybuckettest/testobject"),new ConditionMap() },false),
+             // Statement with bucket name and object name
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Allow", new Principal("*"), new Resources("arn:aws:s3:::mybucket/myobject"),new ConditionMap() },true),
+             // Statement with conditions
+             new KeyValuePair<List<Object>, bool>(new List<Object>{"mybucket", PolicyConstants.READ_ONLY_BUCKET_ACTIONS, "Allow", new Principal("*"), new Resources("arn:aws:s3:::mybucket"),new ConditionMap() },true),
 
             };
-
-            foreach (KeyValuePair<string, bool> pair in testCases)
+            int index = 0;
+            foreach (KeyValuePair<List<Object>, bool> testCase in testCases)
             {
+                index += 1;
+                List<Object> data = testCase.Key;
+                string bucketName = (string)data[0];
 
-                string statementString = (string)pair.Key;
-                bool isValid = pair.Value;
-                Statement stmt = JsonConvert.DeserializeObject<Statement>(statementString, new StatementJsonConverter());
-                Assert.AreEqual(isValid, stmt.isValid("my-bucket"));
+                List<string> actions = (List<string>)data[1];
+                string effect = (string)data[2];
+                Principal principal = (Principal)data[3];
+                Resources resources = (Resources)data[4];
+                ConditionMap conditionMap = (ConditionMap)data[5];
+                bool isExpected = testCase.Value;
+
+                //Set statement attributes
+                Statement statement = new Statement();
+
+                statement.actions = actions;
+                statement.effect = effect;
+                statement.principal = principal;
+                statement.conditions = conditionMap;
+                statement.resources = resources;
+                bool isActual = statement.isValid(bucketName);
+                Assert.AreEqual(isActual, isExpected);
+            }
+
+        }
+
+        // Test Bucket Policy resource match
+        [TestMethod]
+        public void TestBucketPolicyResourceMatch()
+        {
+            string awsPrefix = PolicyConstants.AWS_RESOURCE_PREFIX;
+
+            var testCases = new List<KeyValuePair<List<Object>, bool>>()
+            {
+             // Policy with resource ending with bucket /* allows access to all objects within given bucket.
+             new KeyValuePair<List<Object>,bool>(new List<Object>{ TestHelper.GenerateResourcesPrefix("minio-bucket",""),
+                                                                   TestHelper.GenerateStatement(awsPrefix + "minio-bucket/*"),
+                                                                  }, 
+                                                                  true),
+             // Policy with resource ending with bucket/oo* should deny access to object named output.txt in that bucket
+             new KeyValuePair<List<Object>,bool>(new List<Object>{ TestHelper.GenerateResourcesPrefix("minio-bucket","output.txt"),
+                                                                   TestHelper.GenerateStatement(awsPrefix + "minio-bucket/oo*"),
+                                                                  },
+                                                                  false),
+            // Policy with resource ending with bucket/oo* should allow access to object named ootput.txt in that bucket
+
+            new KeyValuePair<List<Object>,bool>(new List<Object>{ TestHelper.GenerateResourcesPrefix("minio-bucket","ootput.txt"),
+                                                                   TestHelper.GenerateStatement(awsPrefix + "minio-bucket/oo*"),
+                                                                  },
+                                                                  true),
+            // Policy with resource ending with bucket/oo* allows access to all subfolders starting with "oo" inside given bucket. 
+            new KeyValuePair<List<Object>,bool>(new List<Object>{ TestHelper.GenerateResourcesPrefix("minio-bucket","oops/output.txt"),
+                                                                   TestHelper.GenerateStatement(awsPrefix + "minio-bucket/oo*"),
+                                                                  },
+                                                                  true),
+            // Policy with resource subfolder not matching object subfolder.
+            new KeyValuePair<List<Object>,bool>(new List<Object>{ TestHelper.GenerateResourcesPrefix("minio-bucket","test/mybad/output.txt"),
+                                                                   TestHelper.GenerateStatement(awsPrefix + "minio-bucket/test/mybed/*"),
+                                                                  },
+                                                                  false),
+            // Test names space flatness
+            new KeyValuePair<List<Object>,bool>(new List<Object>{ TestHelper.GenerateResourcesPrefix("minio-bucket","Asia/India/MountK2/trip/sunrise.jpg"),
+                                                                   TestHelper.GenerateStatement(awsPrefix + "minio-bucket/*/India/*/trip/*"),
+                                                                  },
+                                                                  true),
+            new KeyValuePair<List<Object>,bool>(new List<Object>{ TestHelper.GenerateResourcesPrefix("minio-bucket","Asia/India/MountK2/trip/sunrise.jpg"),
+                                                                   TestHelper.GenerateStatement(awsPrefix + "minio-bucket/*/India/*/sunrise.jpg"),
+                                                                  },
+                                                                  true),
+            };
+            int index = 0;
+            foreach (KeyValuePair<List<Object>, bool> testCase in testCases)
+            {
+                index += 1;
+                List<Object> data = testCase.Key;
+                string resourcePrefix = (string)data[0];
+
+                Statement stmt = (Statement)data[1];
+                
+                bool isExpected = testCase.Value;
+
+                Resources matched = stmt.resources.Match(resourcePrefix);
+                bool isActualMatch = matched.SetEquals(stmt.resources);
+                Console.Out.WriteLine(matched);
+                Console.Out.WriteLine(stmt.resources);
+                Assert.AreEqual(isExpected, isActualMatch);
+            }
+
+        }
+
+        [TestMethod]
+        public void TestSetPolicy()
+        {
+            //List<string> actions, string resourcePrefix, string effect = "Allow", string aws = "*", bool withConditions = false)
+
+            var testCases = new List<KeyValuePair<List<Object>, string>>()
+            {
+                /*
+             // BucketPolicy NONE - empty statements, bucketname and prefix
+             new KeyValuePair<List<Object>,string>(new List<Object>
+             { new Statement(),
+               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
+             */
+                // BucketPolicy NONE - non empty statements, empty bucketname and prefix
+             new KeyValuePair<List<Object>,string>(new List<Object>
+             { TestHelper.GenerateStatement(PolicyConstants.READ_ONLY_BUCKET_ACTIONS,
+                                            resourcePrefix:"arn:aws:s3:::mybucket"),
+               PolicyType.NONE,"","" }, 
+               @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":[""*""]},""Resource"":[""arn:aws:s3:::mybucket""],""Sid"":""""}]}"),
+
+               // BucketPolicy NONE - empty statements, bucketname and prefix
+             new KeyValuePair<List<Object>,string>(new List<Object>
+             { new Statement(),
+               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
+
+               // BucketPolicy NONE - empty statements, bucketname and prefix
+             new KeyValuePair<List<Object>,string>(new List<Object>
+             { new Statement(),
+               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
+
+             /*
+             // Policy with resource ending with bucket /* allows access to all objects within given bucket.
+             new KeyValuePair<List<Object>,string>(new List<Object>
+             { TestHelper.GenerateStatement(PolicyConstants.READ_ONLY_BUCKET_ACTIONS,
+                                            effect:"Allow",
+                                            aws:"*",
+                                            withConditions:false,
+                                            resourcePrefix:"arn:aws:s3:::mybucket"
+                                            ),
+               PolicyType.NONE,"mybucket","" }, @""),
+               */
+            };
+            int index = 0;
+            foreach (KeyValuePair<List<Object>, string> testCase in testCases)
+            {
+                index += 1;
+                List<Object> data = testCase.Key;
+                Statement statement = (Statement)data[0];
+
+                PolicyType policyType = (PolicyType)data[1];
+
+                string bucketName = (string)data[2];
+                string prefix = (string)data[3];
+                string expectedResult = testCase.Value;
+                BucketPolicy policy = new BucketPolicy(bucketName);
+                
+                policy.SetPolicy(policyType, prefix);
+                string policyJSON = policy.GetJson();
+                Assert.AreEqual(expectedResult, policyJSON);
             }
         }
+        /*
+
         [TestMethod]
-        public void TestIfStringIsetGetsDeSerialized_Test1()
+        public void TestNewStatement()
         {
-            string policyString = @"{""Version"":""2012 - 10 - 17"",""Statement"":[{""Sid"":"""",""Effect"":""Allow"",""Principal"":{""AWS"":"" * ""},""Action"":""s3: GetBucketLocation"",""Resource"":""arn: aws: s3:::miniodotnetvpn5pic718xfutt""},{""Sid"":"""",""Effect"":""Allow"",""Principal"":{""AWS"":"" * ""},""Action"":""s3: ListBucket"",""Resource"":""arn: aws: s3:::miniodotnetvpn5pic718xfutt"",""Condition"":{""StringEquals"":{""s3: prefix"":""dotnetcms1ssazhd""}}},{""Sid"":"""",""Effect"":""Allow"",""Principal"":{""AWS"":"" * ""},""Action"":""s3: GetObject"",""Resource"":""arn: aws: s3:::miniodotnetvpn5pic718xfutt / dotnetcms1ssazhd * ""}]}";
-
-
-           // ConditionKeyMap ckmap = JsonConvert.DeserializeObject<ConditionKeyMap>(ckmapString);
-            var contentBytes = System.Text.Encoding.UTF8.GetBytes(policyString);
-            string bucketName = "miniodotnetvpn5pic718xfutt";
-            var stream = new MemoryStream(contentBytes);
-            BucketPolicy policy = BucketPolicy.parseJson(stream, bucketName);
-        }
+            var testCases = new List<KeyValuePair<List<Object>,string>>()
+            {
+             
+             // Empty statement and bucket name
+             new KeyValuePair<List<Object>,string>(new List<Object>{"", PolicyType.NONE, "" }, "{}"),
+                     
+             new KeyValuePair<List<Object>,string>(new List<Object>{"mybucket",PolicyType.READ_ONLY,"hello" },"expected"),
        
+            };
+            int index = 0;
+            foreach (KeyValuePair<List<Object>, string> testCase in testCases)
+            {
+                index += 1;
+                List<Object> data = testCase.Key;
+                string bucketName = (string)data[0];
+
+               PolicyType policyType = (PolicyType) data[1];
+                string prefix = (string)data[2];
+               
+                string expected = testCase.Value;
+
+                //Set statement attributes
+
+                
+                //policy.
+              
+                string stmtJSON = JsonConvert.SerializeObject(statement, Formatting.None,
+                                     new JsonSerializerSettings
+                                     {
+                                         NullValueHandling = NullValueHandling.Ignore
+                                     });
+
+                Assert.AreEqual(expected, stmtJSON);
+            }
+
+        }
+        */
     }
 }

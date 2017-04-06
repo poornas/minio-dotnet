@@ -48,7 +48,12 @@ namespace Minio.DataModel.Policy
          */
         public bool isValid(string bucketName)
         {
-            ISet<string> intersection = new HashSet<string>(this.actions);
+            ISet<string> intersection;
+            if (this.actions != null)
+                intersection = new HashSet<string>(this.actions);
+            else
+                intersection = new HashSet<string>();
+
             intersection.IntersectWith(PolicyConstants.VALID_ACTIONS());
             if (intersection.Count == 0)
             {
@@ -59,7 +64,7 @@ namespace Minio.DataModel.Policy
                 return false;
             }
 
-            IList<string> aws = this.principal.aws();
+            IList<string> aws = this.principal != null ? this.principal.aws() : null;
             if (aws == null || !aws.Contains("*"))
             {
                 return false;
@@ -67,6 +72,8 @@ namespace Minio.DataModel.Policy
 
             string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
 
+            if (this.resources is null)
+                return false;
             if (this.resources.Contains(bucketResource))
             {
                 return true;
@@ -79,6 +86,8 @@ namespace Minio.DataModel.Policy
 
             return true;
         }
+
+
 
         /**
          * Removes object actions for given object resource.

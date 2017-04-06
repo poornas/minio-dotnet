@@ -30,17 +30,18 @@ namespace Minio.DataModel
         [JsonIgnore]
         private string bucketName;
         [JsonProperty("Version")]
-        private string version;
+        private static string version;
+
 
         [JsonProperty("Statement")]
-        private List<Statement> statements { get; set; }
+        internal List<Statement> statements { get; set; }
 
         public BucketPolicy(string bucketName = null)
         {
             if (bucketName != null)
             {
                 this.bucketName = bucketName;
-                this.version = "2012-10-17";
+                version = "2012-10-17";
             }
         }
 
@@ -48,7 +49,7 @@ namespace Minio.DataModel
         /**
          * Reads JSON from given {@link Reader} and returns new {@link BucketPolicy} of given bucket name.
          */
-        public static BucketPolicy parseJson(MemoryStream reader, String bucketName)
+        public static BucketPolicy ParseJson(MemoryStream reader, String bucketName)
         {
             string toparse = new StreamReader(reader).ReadToEnd();
             JObject jsonData = JObject.Parse(toparse);
@@ -69,7 +70,7 @@ namespace Minio.DataModel
           * Generates JSON of this BucketPolicy object.
           */
         //JsonIgnore
-        public string getJson()
+        public string GetJson()
         {
             return JsonConvert.SerializeObject(this, Formatting.None,
                               new JsonSerializerSettings
@@ -421,7 +422,7 @@ namespace Minio.DataModel
          * Returns policy type of this bucket policy.
          */
         // @JsonIgnore
-        public PolicyType getPolicy(string prefix)
+        public PolicyType GetPolicy(string prefix)
         {
             string bucketResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName;
             string objectResource = PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + prefix + "*";
@@ -433,7 +434,7 @@ namespace Minio.DataModel
             bool objReadOnly = false;
             bool objWriteOnly = false;
 
-            foreach (Statement s in statements)
+            foreach (Statement s in statements ?? new List<Statement>())
             {
                 ISet<string> matchedObjResources = new HashSet<string>();
                 if (s.resources.Contains(objectResource))
@@ -442,7 +443,7 @@ namespace Minio.DataModel
                 }
                 else
                 {
-                    matchedObjResources = s.resources.match(objectResource);
+                    matchedObjResources = s.resources.Match(objectResource);
                 }
 
                 if (matchedObjResources.Count() != 0)
@@ -503,7 +504,7 @@ namespace Minio.DataModel
          * Returns policy type of all prefixes.
          */
         //@JsonIgnore
-        public Dictionary<String, PolicyType> getPolicies()
+        public Dictionary<String, PolicyType> GetPolicies()
         {
             Dictionary<String, PolicyType> policyRules = new Dictionary<string, PolicyType>();
             ISet<String> objResources = new HashSet<String>();
@@ -529,7 +530,7 @@ namespace Minio.DataModel
                 }
 
                 String objectPath = resource.Substring(bucketResource.Length + 1, resource.Length);
-                PolicyType policy = this.getPolicy(objectPath);
+                PolicyType policy = this.GetPolicy(objectPath);
                 policyRules.Add(bucketName + "/" + objectPath + asterisk, policy);
             }
 
@@ -541,7 +542,7 @@ namespace Minio.DataModel
          * Sets policy type for given prefix.
          */
         // @JsonIgnore
-        public void setPolicy(PolicyType policy, String prefix)
+        public void SetPolicy(PolicyType policy, String prefix)
         {
             if (statements == null)
             {
