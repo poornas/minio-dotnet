@@ -141,61 +141,55 @@ namespace Minio.Tests
         [TestMethod]
         public void TestSetPolicy()
         {
-            //List<string> actions, string resourcePrefix, string effect = "Allow", string aws = "*", bool withConditions = false)
-
             var testCases = new List<KeyValuePair<List<Object>, string>>()
             {
-                /*
-             // BucketPolicy NONE - empty statements, bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { new Statement(),
-               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
-             */
-                // BucketPolicy NONE - non empty statements, empty bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { TestHelper.GenerateStatement(PolicyConstants.READ_ONLY_BUCKET_ACTIONS,
-                                            resourcePrefix:"arn:aws:s3:::mybucket"),
-               PolicyType.NONE,"","" }, 
-               @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":[""*""]},""Resource"":[""arn:aws:s3:::mybucket""],""Sid"":""""}]}"),
+                /* 
+                 // BucketPolicy NONE - empty statements, bucketname and prefix
+                 new KeyValuePair<List<Object>,string>(new List<Object>
+                 { @"{""Statement"":[]}",
+                   PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
 
-               // BucketPolicy NONE - empty statements, bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { new Statement(),
-               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
+                 // BucketPolicy NONE - non empty statements, empty bucketname and prefix
+                 new KeyValuePair<List<Object>,string>(new List<Object>
+                 { @"{""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}",
+                   PolicyType.NONE,"","" },@"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}" ),
+                // BucketPolicy NONE - empty statements, nonempty bucketname and prefix
+                 new KeyValuePair<List<Object>,string>(new List<Object>
+                 { @"{""Statement"":[]}",
+                   PolicyType.NONE,"mybucket","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
+            
+                // Bucket policy NONE , empty statements , bucketname, nonempty prefix
+                new KeyValuePair<List<Object>,string>(new List<Object>
+                { @"{""Statement"":[]}",
+               PolicyType.NONE,"","prefix" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
+                // BucketPolicy READONLY - empty statements, bucket name and prefix.
+                new KeyValuePair<List<Object>,string>(new List<Object>
+                { @"{""Statement"":[]}",
+               PolicyType.READ_ONLY,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
+                // Bucket policy READONLY , nonempty statements , bucketname and  prefix - no change to existing bucketpolicy
+                new KeyValuePair<List<Object>,string>(new List<Object>
+                { @"{""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}",
+               PolicyType.READ_ONLY,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}"),
+            */
+                // BucketPolicy READONLY - empty statements, non-empty bucket name and prefix.
+                new KeyValuePair<List<Object>,string>(new List<Object>
+                { @"{""Statement"":[]}",
+               PolicyType.READ_ONLY,"mybucket","" }, @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:GetObject""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}"),
 
-               // BucketPolicy NONE - empty statements, bucketname and prefix
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { new Statement(),
-               PolicyType.NONE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[]}"),
 
-             /*
-             // Policy with resource ending with bucket /* allows access to all objects within given bucket.
-             new KeyValuePair<List<Object>,string>(new List<Object>
-             { TestHelper.GenerateStatement(PolicyConstants.READ_ONLY_BUCKET_ACTIONS,
-                                            effect:"Allow",
-                                            aws:"*",
-                                            withConditions:false,
-                                            resourcePrefix:"arn:aws:s3:::mybucket"
-                                            ),
-               PolicyType.NONE,"mybucket","" }, @""),
-               */
             };
             int index = 0;
             foreach (KeyValuePair<List<Object>, string> testCase in testCases)
             {
                 index += 1;
                 List<Object> data = testCase.Key;
-                Statement statement = (Statement)data[0];
-
                 PolicyType policyType = (PolicyType)data[1];
-
                 string bucketName = (string)data[2];
                 string prefix = (string)data[3];
+                BucketPolicy currentpolicy = TestHelper.GenerateBucketPolicy((string)data[0], bucketName);
+                currentpolicy.SetPolicy(policyType, prefix);
                 string expectedResult = testCase.Value;
-                BucketPolicy policy = new BucketPolicy(bucketName);
-                
-                policy.SetPolicy(policyType, prefix);
-                string policyJSON = policy.GetJson();
+                string policyJSON = currentpolicy.GetJson();
                 Assert.AreEqual(expectedResult, policyJSON);
             }
         }

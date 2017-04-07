@@ -35,7 +35,8 @@ namespace ConsoleApp1
             try
             {
                 // Assign parameters before starting the test 
-                string bucketName = "miniodotnetjlx2s";  //for eastern          
+                 string bucketName = "miniodotnetjlx2s";  //for eastern      
+                bucketName = "testminiopolicy";
                 string objectName = "testobject4000";
                 Program.Run(minioClient, bucketName, objectName).Wait();
                 Console.ReadLine();

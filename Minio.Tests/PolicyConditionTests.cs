@@ -232,7 +232,6 @@ namespace Minio.Tests
 
             };
 
-            new Statement().isValid(null);
             int index = 0;
             foreach (KeyValuePair<Tuple<ConditionMap, ConditionMap>, string> pair in testCases)
             {
