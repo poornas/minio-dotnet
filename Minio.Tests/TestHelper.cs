@@ -39,7 +39,7 @@ namespace Minio.Tests
             return PolicyConstants.AWS_RESOURCE_PREFIX + bucketName + "/" + objectName;
         }
 
-        internal static Statement GenerateStatement(List<string> actions,string resourcePrefix, string effect = "Allow", string aws = "*",bool withConditions=false)
+        internal static Statement GenerateStatement(List<string> actions,string resourcePrefix, string effect = "Allow", string aws = "*",bool withConditions=false,string withStringSet="hello",string condition="StringEquals")
         {
             Statement stmt = new Statement();
             stmt.resources = new Resources(resourcePrefix);
@@ -50,13 +50,22 @@ namespace Minio.Tests
             {
                 stmt.conditions = new ConditionMap();
                 ConditionKeyMap ckmap = new ConditionKeyMap();
-                ckmap.Add("s3:prefix", new HashSet<string>() { "hello" });
-                stmt.conditions.Add("StringEquals", ckmap);
+                if (withStringSet != null)
+                    ckmap.Add("s3:prefix", new HashSet<string>() {withStringSet });
+                if (condition != null && ckmap != null)
+                    stmt.conditions.Add(condition, ckmap);
             }
             
             return stmt;
         }
 
+        internal static List<string> GetReadAndWriteBucketActions()
+        {
+            List<string> res = new List<string>();
+            res.AddRange(PolicyConstants.READ_ONLY_BUCKET_ACTIONS);
+            res.AddRange(PolicyConstants.WRITE_ONLY_BUCKET_ACTIONS);
+            return res;
+        }
         internal static BucketPolicy GenerateBucketPolicy(string policyString,string bucketName)
         {
             var contentBytes = System.Text.Encoding.UTF8.GetBytes(policyString);
@@ -130,5 +139,6 @@ namespace Minio.Tests
                 Assert.AreEqual(expectedResult, policyJSON);
             }
         }
+        
     }
 }

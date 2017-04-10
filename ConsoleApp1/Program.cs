@@ -31,14 +31,14 @@ namespace ConsoleApp1
 
             // WithSSL() enables SSL support in Minio client
             var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
-
+            minioClient.SetTraceOn();
             try
             {
                 // Assign parameters before starting the test 
                  string bucketName = "miniodotnetjlx2s";  //for eastern      
                 bucketName = "testminiopolicy";
-                string objectName = "testobject4000";
-                Program.Run(minioClient, bucketName, objectName).Wait();
+                string objectName = "aurora_picture.jpg";
+                Program.Run2(minioClient, bucketName, objectName).Wait();
                 Console.ReadLine();
 
             }
@@ -104,5 +104,39 @@ namespace ConsoleApp1
             HttpWebResponse response = httpRequest.GetResponse() as HttpWebResponse;
         }
 
+        // Get object in a bucket from a particular offset
+        public async static Task Run2(MinioClient minio,
+                                     string bucketName = "my-bucket-name",
+                                     string objectName = "my-object-name",
+                                     string fileName = "my-file-name")
+        {
+            try
+            {
+                Console.Out.WriteLine("Running example for API: GetObjectAsync");
+                // Check whether the object exists using StatObjectAsync(). If the object is not found,
+                // StatObjectAsync() will throw an exception.
+               // await minio.StatObjectAsync(bucketName, objectName);
+
+                //Get object content starting at byte position 1024 and length of 4096
+                await minio.GetObjectAsync(bucketName, objectName,//1024L, 5000L,
+                (stream) =>
+                {
+                    var fileStream = File.Create("tempFileName");
+                    stream.CopyTo(fileStream);
+                    fileStream.Dispose();
+                    FileInfo writtenInfo = new FileInfo("tempFileName");
+                    long file_read_size = writtenInfo.Length;
+                    Console.Out.WriteLine("Gotback" + file_read_size.ToString());
+                    // Uncommment to print the file on output console
+                    //stream.CopyTo(Console.OpenStandardOutput());
+                });
+                Console.WriteLine("Downloaded the file " + fileName + " in bucket " + bucketName);
+                Console.Out.WriteLine();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
+            }
+        }
     }
 }

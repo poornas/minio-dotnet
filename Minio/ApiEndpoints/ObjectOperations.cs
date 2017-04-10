@@ -45,16 +45,62 @@ namespace Minio
         /// <param name="callback">A stream will be passed to the callback</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
+            Dictionary<string, string> headerMap = new Dictionary<string, string>();
+            headerMap.Add("Range", "bytes=500- ");
+            var request = await this.CreateRequest(Method.GET,
+                                                bucketName,
+                                                objectName: objectName,
+                                                headerMap: headerMap);
+            request.ResponseWriter = cb;
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+            /*
+            await this.GetObjectAsync(bucketName, objectName, 0, null, (stream) =>
+            {
+                cb(stream);
+            }, cancellationToken);
+            */
+        }
 
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="callback">A stream will be passed to the callback</param>
+        public async Task GetObjectAsync(string bucketName, string objectName, long? offset, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            await this.GetObjectAsync(bucketName, objectName, offset, null, (stream) =>
+            {
+                cb(stream);
+            }, cancellationToken);
+        }
+        /// <summary>
+        /// Get an object. The object will be streamed to the callback given by the user.
+        /// </summary>
+        /// <param name="bucketName">Bucket to retrieve object from</param>
+        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="callback">A stream will be passed to the callback</param>
+        public async Task GetObjectAsync(string bucketName, string objectName, long? offset,long? length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (offset < 0)
+                throw new ArgumentException("Offset should be zero or greater");
+            if (length != null && length < 0)
+                throw new ArgumentException("Length should be greater than zero");
+            Dictionary<string, string> headerMap = new Dictionary<string, string>();
+            if (length > 0)
+                headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
+            else
+                headerMap.Add("Range", "bytes=" + offset.ToString() + "-");
+                    
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName,
-                                                     objectName: objectName);
+                                                     objectName: objectName,
+                                                     headerMap: headerMap);
 
             request.ResponseWriter = cb;
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
 
         }
-
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>

@@ -34,7 +34,6 @@ namespace Minio.DataModel
 
 
         [JsonProperty("Statement")]
-        [JsonConverter(typeof(StatementJsonConverter))]
         internal List<Statement> statements { get; set; }
 
         public BucketPolicy(string bucketName = null)
@@ -55,16 +54,22 @@ namespace Minio.DataModel
             JObject jsonData = JObject.Parse(toparse);
             ITraceWriter traceWriter = new MemoryTraceWriter();
 
-            BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse, new JsonSerializerSettings { TraceWriter = traceWriter } );
+            BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse, 
+                new JsonSerializerSettings
+                {
+                    TraceWriter = traceWriter,
+                    NullValueHandling = NullValueHandling.Ignore,
+                });
             Console.Out.WriteLine(traceWriter);
             bucketPolicy.bucketName = bucketName;
             
             return bucketPolicy;
         }
-        //temp method to gen test data
-        public void SetStatements(Statement stmt)
+        // Helper method for unit testing
+        internal void SetStatements(Statement stmt)
         {
-            this.statements = new List<Statement>();
+            if (this.statements == null)
+                 this.statements = new List<Statement>();
             this.statements.Add(stmt);
         }
 
@@ -443,6 +448,10 @@ namespace Minio.DataModel
             foreach (Statement s in statements ?? new List<Statement>())
             {
                 ISet<string> matchedObjResources = new HashSet<string>();
+
+                if (s.resources == null)
+                    continue;
+
                 if (s.resources.Contains(objectResource))
                 {
                     matchedObjResources.Add(objectResource);
@@ -520,7 +529,8 @@ namespace Minio.DataModel
             // Search all resources related to objects policy
             foreach (Statement s in statements)
             {
-                objResources.UnionWith(s.resources.startsWith(bucketResource + "/"));
+                if (s.resources != null)
+                    objResources.UnionWith(s.resources.startsWith(bucketResource + "/"));
             }
 
             // Pretend that policy resource as an actual object and fetch its policy
@@ -535,7 +545,9 @@ namespace Minio.DataModel
                     asterisk = "*";
                 }
 
-                String objectPath = resource.Substring(bucketResource.Length + 1, resource.Length);
+                // String objectPath = resource.Substring(bucketResource.Length + 1, resource.Length);
+                String objectPath = resource.Substring(bucketResource.Length + 1,resource.Length - bucketResource.Length  - 1);
+
                 PolicyType policy = this.GetPolicy(objectPath);
                 policyRules.Add(bucketName + "/" + objectPath + asterisk, policy);
             }

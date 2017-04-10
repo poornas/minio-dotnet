@@ -108,7 +108,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Policy", "Policy", "{83F364
 		Minio\DataModel\Policy\Resources.cs = Minio\DataModel\Policy\Resources.cs
 		Minio\DataModel\Policy\SingleOrArrayConverter.cs = Minio\DataModel\Policy\SingleOrArrayConverter.cs
 		Minio\DataModel\Policy\Statement.cs = Minio\DataModel\Policy\Statement.cs
-		Minio\DataModel\Policy\StatementJsonConverter.cs = Minio\DataModel\Policy\StatementJsonConverter.cs
 		StringSet.cs = StringSet.cs
 	EndProjectSection
 EndProject
@@ -122,6 +121,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Minio.Examples", "Minio.Exa
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cases", "Cases", "{FD22BDF0-80C4-44C8-8A58-BB15FB6C591C}"
+	ProjectSection(SolutionItems) = preProject
+		Minio.Examples\Cases\GetPartialObject.cs = Minio.Examples\Cases\GetPartialObject.cs
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Client.Examples.Net452", "Minio.Examples\Minio.Client.Examples.Net452\Minio.Client.Examples.Net452.csproj", "{BEB7AAD6-D26D-4DB2-91C6-916D2EF0C13B}"
 EndProject
