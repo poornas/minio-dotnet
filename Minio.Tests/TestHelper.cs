@@ -131,11 +131,9 @@ namespace Minio.Tests
                 BucketPolicy policy = new BucketPolicy(bucketName);
                 policy.SetStatements(statement);
                 policyJSON = policy.GetJson();
-                Console.Out.WriteLine(@"before:""", policyJSON, @"""");
 
                 policy.SetPolicy(policyType, prefix);
                 policyJSON = policy.GetJson();
-                Console.Out.WriteLine(@"after:""", policyJSON, @"""");
                 Assert.AreEqual(expectedResult, policyJSON);
             }
         }

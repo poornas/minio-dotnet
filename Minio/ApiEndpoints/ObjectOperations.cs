@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using RestSharp;
 
 using System.Threading.Tasks;
@@ -43,42 +42,32 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="callback">A stream will be passed to the callback</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
             Dictionary<string, string> headerMap = new Dictionary<string, string>();
-            headerMap.Add("Range", "bytes=500- ");
             var request = await this.CreateRequest(Method.GET,
                                                 bucketName,
                                                 objectName: objectName,
                                                 headerMap: headerMap);
             request.ResponseWriter = cb;
-            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
-            /*
+            
             await this.GetObjectAsync(bucketName, objectName, 0, null, (stream) =>
             {
                 cb(stream);
             }, cancellationToken);
-            */
+            
         }
+
 
         /// <summary>
         /// Get an object. The object will be streamed to the callback given by the user.
         /// </summary>
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
-        /// <param name="callback">A stream will be passed to the callback</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, long? offset, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            await this.GetObjectAsync(bucketName, objectName, offset, null, (stream) =>
-            {
-                cb(stream);
-            }, cancellationToken);
-        }
-        /// <summary>
-        /// Get an object. The object will be streamed to the callback given by the user.
-        /// </summary>
-        /// <param name="bucketName">Bucket to retrieve object from</param>
-        /// <param name="objectName">Name of object to retrieve</param>
+        /// <param name="offset"> Offset of the object from where stream will start</param>
+        /// <param name="length">length of the object that will be read in the stream </param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="callback">A stream will be passed to the callback</param>
         public async Task GetObjectAsync(string bucketName, string objectName, long? offset,long? length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -89,9 +78,7 @@ namespace Minio
             Dictionary<string, string> headerMap = new Dictionary<string, string>();
             if (length > 0)
                 headerMap.Add("Range", "bytes=" + offset.ToString() + "-" + (offset + length - 1).ToString());
-            else
-                headerMap.Add("Range", "bytes=" + offset.ToString() + "-");
-                    
+            
             var request = await this.CreateRequest(Method.GET,
                                                      bucketName,
                                                      objectName: objectName,
@@ -107,6 +94,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Name of object to retrieve</param>
         /// <param name="fileName">string with file path</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task GetObjectAsync(string bucketName, string objectName, string fileName, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -182,6 +170,8 @@ namespace Minio
         /// <param name="objectName">Key of the new object</param>
         /// <param name="fileName">Path of file to upload</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+
         public async Task PutObjectAsync(string bucketName, string objectName, string fileName, string contentType = null, CancellationToken cancellationToken=default(CancellationToken))
         {
             utils.ValidateFile(fileName, contentType);
@@ -202,6 +192,8 @@ namespace Minio
         /// <param name="size">Total size of bytes to be written, must match with data's length</param>
         /// <param name="contentType">Content type of the new object, null defaults to "application/octet-stream"</param>
         /// <param name="data">Stream of bytes to send</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+
         public async Task PutObjectAsync(string bucketName, string objectName, Stream data, long size, string contentType=null, CancellationToken cancellationToken = default(CancellationToken))
         {
             utils.validateBucketName(bucketName);
@@ -298,6 +290,7 @@ namespace Minio
         /// <param name="objectName">Object to be uploaded</param>
         /// <param name="uploadId">Upload Id</param>
         /// <param name="etags">Etags</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task CompleteMultipartUploadAsync(string bucketName, string objectName, string uploadId, Dictionary<int, string> etags, CancellationToken cancellationToken)
         {
@@ -336,6 +329,7 @@ namespace Minio
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
         /// <param name="uploadId"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private IObservable<Part> ListParts(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
         {
@@ -365,6 +359,7 @@ namespace Minio
         /// <param name="objectName"></param>
         /// <param name="uploadId"></param>
         /// <param name="partNumberMarker"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<Tuple<ListPartsResult, List<Part>>> GetListPartsAsync(string bucketName, string objectName, string uploadId, int partNumberMarker, CancellationToken cancellationToken)
         {
@@ -406,6 +401,7 @@ namespace Minio
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
         /// <param name="contentType"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<string> NewMultipartUploadAsync(string bucketName, string objectName, string contentType, CancellationToken cancellationToken)
         {
@@ -436,6 +432,7 @@ namespace Minio
         /// <param name="partNumber"></param>
         /// <param name="data"></param>
         /// <param name="contentType"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<string> PutObjectAsync(string bucketName, string objectName, string uploadId, int partNumber, byte[] data, string contentType, CancellationToken cancellationToken)
         {
@@ -479,6 +476,7 @@ namespace Minio
         /// <param name="keyMarker"></param>
         /// <param name="uploadIdMarker"></param>
         /// <param name="delimiter"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<Tuple<ListMultipartUploadsResult, List<Upload>>> GetMultipartUploadsListAsync(string bucketName,
                                                                                      string prefix,
@@ -539,6 +537,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to list all incomplepte uploads from</param>
         /// <param name="prefix">prefix to list all incomplete uploads</param>
         /// <param name="recursive">option to list incomplete uploads recursively</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>A lazily populated list of incomplete uploads</returns>
         public IObservable<Upload> ListIncompleteUploads(string bucketName, string prefix = "", bool recursive = true, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -556,6 +555,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
         /// <param name="objectName">Key of object to list incomplete uploads from</param>
         /// <param name="delimiter">delimiter of object to list incomplete uploads</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Observable that notifies when next next upload becomes available</returns>
         private IObservable<Upload> listIncompleteUploads(string bucketName, string prefix, string delimiter,CancellationToken cancellationToken)
         {
@@ -586,6 +586,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task<string> getLatestIncompleteUploadIdAsync(string bucketName, string objectName,CancellationToken cancellationToken)
         {
@@ -614,6 +615,8 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to remove incomplete uploads from</param>
         /// <param name="objectName">Key to remove incomplete uploads from</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
+        /// <returns></returns>
         public async Task RemoveIncompleteUploadAsync(string bucketName, string objectName, CancellationToken cancellationToken = default(CancellationToken))
         {
             var uploads = await this.ListIncompleteUploads(bucketName, objectName, cancellationToken:cancellationToken).ToArray();
@@ -632,6 +635,7 @@ namespace Minio
         /// <param name="bucketName"></param>
         /// <param name="objectName"></param>
         /// <param name="uploadId"></param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         private async Task RemoveUploadAsync(string bucketName, string objectName, string uploadId, CancellationToken cancellationToken)
         {
@@ -652,6 +656,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to list incomplete uploads from</param>
         /// <param name="objectName">Key of object to list incomplete uploads from</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task RemoveObjectAsync(string bucketName, string objectName,CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -669,6 +674,7 @@ namespace Minio
         /// </summary>
         /// <param name="bucketName">Bucket to test object in</param>
         /// <param name="objectName">Name of the object to stat</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns>Facts about the object</returns>
         public async Task<ObjectStat> StatObjectAsync(string bucketName, string objectName,CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -752,6 +758,7 @@ namespace Minio
         /// <param name="destBucketName">Bucket name where the object will be copied to.</param>
         /// <param name="destObjectName">Object name to be created, if not provided uses source object name as destination object name.</param>
         /// <param name="copyConditions">optionally can take a key value CopyConditions as well for conditionally attempting copyObject.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <returns></returns>
         public async Task<CopyObjectResult> CopyObjectAsync(string bucketName, string objectName, string destBucketName, string destObjectName = null, CopyConditions copyConditions = null,CancellationToken cancellationToken=default(CancellationToken))
         {
@@ -809,6 +816,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
+        /// <returns></returns>
         public async Task<string> PresignedGetObjectAsync(string bucketName, string objectName, int expiresInt)
         {
             var request = await this.CreateRequest(Method.GET, bucketName,
@@ -823,6 +831,7 @@ namespace Minio
         /// <param name="bucketName">Bucket to retrieve object from</param>
         /// <param name="objectName">Key of object to retrieve</param>
         /// <param name="expiresInt">Expiration time in seconds</param>
+        /// <returns></returns>
         public async Task<string> PresignedPutObjectAsync(string bucketName, string objectName, int expiresInt)
         {
             var request = await this.CreateRequest(Method.PUT, bucketName,

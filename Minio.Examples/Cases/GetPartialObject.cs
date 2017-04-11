@@ -22,7 +22,8 @@ namespace Minio.Examples.Cases
 {
     class GetPartialObject
     {
-        // Get object in a bucket from a particular offset
+        // Get object in a bucket for a particular offset range. Dotnet SDK currently
+        // requires both start offset and end 
         public async static Task Run(MinioClient minio,
                                      string bucketName="my-bucket-name",
                                      string objectName="my-object-name",
@@ -39,15 +40,15 @@ namespace Minio.Examples.Cases
                 await minio.GetObjectAsync(bucketName, objectName, 1024L, 4096L,
                 (stream) =>
                 {
-                    var fileStream = File.Create("tempFileName");
+                    var fileStream = File.Create(fileName);
                     stream.CopyTo(fileStream);
                     fileStream.Dispose();
-                    FileInfo writtenInfo = new FileInfo("tempFileName");
+                    FileInfo writtenInfo = new FileInfo(fileName);
                     long file_read_size = writtenInfo.Length;
                     // Uncommment to print the file on output console
                     //stream.CopyTo(Console.OpenStandardOutput());
                 });
-                Console.WriteLine("Downloaded the file " + fileName + " in bucket " + bucketName);
+                //Console.WriteLine("Downloaded partial object into file " + fileName + " from bucket " + bucketName);
                 Console.Out.WriteLine();
             }
             catch (Exception e)

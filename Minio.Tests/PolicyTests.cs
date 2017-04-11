@@ -131,8 +131,6 @@ namespace Minio.Tests
 
                 Resources matched = stmt.resources.Match(resourcePrefix);
                 bool isActualMatch = matched.SetEquals(stmt.resources);
-                Console.Out.WriteLine(matched);
-                Console.Out.WriteLine(stmt.resources);
                 Assert.AreEqual(isExpected, isActualMatch);
             }
 

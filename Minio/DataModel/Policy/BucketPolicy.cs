@@ -52,15 +52,12 @@ namespace Minio.DataModel
         {
             string toparse = new StreamReader(reader).ReadToEnd();
             JObject jsonData = JObject.Parse(toparse);
-            ITraceWriter traceWriter = new MemoryTraceWriter();
 
             BucketPolicy bucketPolicy = JsonConvert.DeserializeObject<BucketPolicy>(toparse, 
                 new JsonSerializerSettings
                 {
-                    TraceWriter = traceWriter,
                     NullValueHandling = NullValueHandling.Ignore,
                 });
-            Console.Out.WriteLine(traceWriter);
             bucketPolicy.bucketName = bucketName;
             
             return bucketPolicy;

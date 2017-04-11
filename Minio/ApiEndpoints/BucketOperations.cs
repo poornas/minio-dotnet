@@ -280,7 +280,6 @@ namespace Minio
         public async Task<PolicyType> GetPolicyAsync(string bucketName, string objectPrefix = "", CancellationToken cancellationToken = default(CancellationToken))
         {
             BucketPolicy policy = await GetPolicyAsync(bucketName, cancellationToken);
-            Console.Out.WriteLine(policy.GetJson());
             return policy.GetPolicy(objectPrefix);
         }
 

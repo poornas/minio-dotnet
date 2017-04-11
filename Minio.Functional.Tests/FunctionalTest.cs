@@ -113,81 +113,58 @@ namespace Minio.Functional.Tests
                  MakeBucket_Test3(minioClient).Wait();
                  MakeBucket_Test4(minioClient).Wait();
 
-                //Test removal of bucket
+                // Test removal of bucket
                 RemoveBucket_Test1(minioClient).Wait();
 
-                //Test ListBuckets function
+                // Test ListBuckets function
                 ListBuckets_Test(minioClient).Wait();
 
-                //Test Putobject function
+                // Test Putobject function
                 PutObject_Test1(minioClient).Wait();
                 PutObject_Test2(minioClient).Wait();
 
                 PutObject_Test3(minioClient).Wait();
                 PutObject_Test4(minioClient).Wait();
 
-                //Test StatObject function
+                // Test StatObject function
                 StatObject_Test1(minioClient).Wait();
 
-                //Test GetObjectAsync function
+                // Test GetObjectAsync function
                 GetObject_Test1(minioClient).Wait();
                 GetObject_Test2(minioClient).Wait();
 
-                //Test File GetObject and PutObject functions
+                // Test File GetObject and PutObject functions
 
                 FGetObject_Test1(minioClient).Wait();
                 FPutObject_Test1(minioClient).Wait();
                 FPutObject_Test2(minioClient).Wait();
                 
-                //Test ListObjectAsync function
+                // Test ListObjectAsync function
                 ListObjects_Test1(minioClient).Wait();
                 ListObjects_Test2(minioClient).Wait();
 
-                //Test RemoveObjectAsync function
+                // Test RemoveObjectAsync function
                 RemoveObject_Test1(minioClient).Wait();
 
-                //Test CopyObjectAsync function
+                // Test CopyObjectAsync function
                 CopyObject_Test1(minioClient).Wait();
                 CopyObject_Test2(minioClient).Wait();
                 CopyObject_Test3(minioClient).Wait();
                 CopyObject_Test4(minioClient).Wait();
                
-                //Test SetPolicyAsync function
+                // Test SetPolicyAsync function
                 SetBucketPolicy_Test1(minioClient).Wait();
 
-                //Test Presigned Get/Put operations
+                // Test Presigned Get/Put operations
                 PresignedGetObject_Test1(minioClient).Wait();
                 PresignedPutObject_Test1(minioClient).Wait();
 
-                //Test incomplete uploads
+                // Test incomplete uploads
                 ListIncompleteUpload_Test1(minioClient).Wait();
-
-                END WORKING TESTS
-
-                */
+                
+                // Test GetBucket policy
                 GetBucketPolicy_Test1(minioClient).Wait();
-                // TODO: 
-                //PresignedPostPolicy_Test1(minioClient);
-                //GetBucketPolicy_Test1(minioClient).Wait();
-                /*
-                           
-         
-                                // List the incomplete uploads
-                                ListIncompleteUploads(minioClient, bucketName);
-
-                                // Remove all the incomplete uploads
-                                RemoveIncompleteUpload(minioClient, bucketName, objectName).Wait();
-
-                              // Get the policy for given bucket
-                                GetBucketPolicy(minioClient, bucketName).Wait();
-
               
-                                // Get the presigned POST policy curl url
-                                PresignedPostPolicy(minioClient).Wait();
-
-        
-
-                                  */
                 Console.ReadLine();
             }
             catch (MinioException ex)
@@ -910,6 +887,7 @@ namespace Minio.Functional.Tests
 
             var response = (HttpWebResponse)(await Task<WebResponse>.Factory.FromAsync(httpRequest.BeginGetResponse, httpRequest.EndGetResponse, null));
         }
+
         private async static Task PresignedPostPolicy_Test1(MinioClient minio)
         {
             Console.Out.WriteLine("Test1: PresignedPostPolicyAsync");
@@ -968,6 +946,7 @@ namespace Minio.Functional.Tests
             Console.Out.WriteLine("Test1: PresignedPostPolicyAsync Complete");
            
         }
+
         private async static Task ListIncompleteUpload_Test1(MinioClient minio)
         {
             Console.Out.WriteLine("Test1: ListIncompleteUploads");

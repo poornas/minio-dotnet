@@ -52,15 +52,6 @@ namespace ConsoleApp1
         {
             try
             {
-               // PolicyType policy = await client.GetPolicyAsync(bucketName);
-                /*
-                string presigned_get_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000);
-                Console.Out.WriteLine("PRESIGNED_GET_URL:" + presigned_get_url);
-
-                string presigned_put_url = await client.PresignedPutObjectAsync(bucketName, objectName, 1000);
-                Console.Out.WriteLine(presigned_put_url);
-                UploadObject(presigned_put_url);
-                */
                 PostPolicy form = new PostPolicy();
                 DateTime expiration = DateTime.UtcNow;
                 form.SetExpires(expiration.AddDays(10));
@@ -118,7 +109,7 @@ namespace ConsoleApp1
                // await minio.StatObjectAsync(bucketName, objectName);
 
                 //Get object content starting at byte position 1024 and length of 4096
-                await minio.GetObjectAsync(bucketName, objectName,//1024L, 5000L,
+                await minio.GetObjectAsync(bucketName, objectName,1024L, 5000L,
                 (stream) =>
                 {
                     var fileStream = File.Create("tempFileName");
@@ -126,7 +117,6 @@ namespace ConsoleApp1
                     fileStream.Dispose();
                     FileInfo writtenInfo = new FileInfo("tempFileName");
                     long file_read_size = writtenInfo.Length;
-                    Console.Out.WriteLine("Gotback" + file_read_size.ToString());
                     // Uncommment to print the file on output console
                     //stream.CopyTo(Console.OpenStandardOutput());
                 });
