@@ -19,7 +19,6 @@ using Minio.Exceptions;
 using System.Text;
 using System.IO;
 using Minio.DataModel;
-using Minio.DataModel.Policy;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
@@ -48,13 +47,13 @@ namespace Minio.Functional.Tests
         }
 
         // Generate a random string
-        public static String GetRandomName(int length=5)
+        public static String GetRandomName(int length = 5)
         {
             string characters = "0123456789abcdefghijklmnopqrstuvwxyz";
             if (length > 50)
                 length = 50;
             StringBuilder result = new StringBuilder(length);
-           
+
             for (int i = 0; i < length; i++)
             {
                 result.Append(characters[rnd.Next(characters.Length)]);
@@ -82,19 +81,19 @@ namespace Minio.Functional.Tests
             }
 
             // WithSSL() enables SSL support in Minio client
-            var minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
+            var minioClient = new MinioClient(endPoint, accessKey, secretKey).WithSSL();
 
             try
             {
-              
+
                 // Assign parameters before starting the test 
                 string bucketName = GetRandomName();
-               // string smallFileName = CreateFile(1 * MB);
-               // string bigFileName = CreateFile(6 * MB);
+                // string smallFileName = CreateFile(1 * MB);
+                // string bigFileName = CreateFile(6 * MB);
                 string objectName = GetRandomName();
                 string destBucketName = GetRandomName();
                 string destObjectName = GetRandomName();
-               
+
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
 
@@ -103,15 +102,15 @@ namespace Minio.Functional.Tests
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
-                /* TESTED SO FAR 
+
                 // Check if bucket exists
                 BucketExists_Test(minioClient).Wait();
 
                 // Create a new bucket
-                 MakeBucket_Test1(minioClient).Wait();
-                 MakeBucket_Test2(minioClient).Wait();
-                 MakeBucket_Test3(minioClient).Wait();
-                 MakeBucket_Test4(minioClient).Wait();
+                MakeBucket_Test1(minioClient).Wait();
+                MakeBucket_Test2(minioClient).Wait();
+                MakeBucket_Test3(minioClient).Wait();
+                MakeBucket_Test4(minioClient).Wait();
 
                 // Test removal of bucket
                 RemoveBucket_Test1(minioClient).Wait();
@@ -132,13 +131,14 @@ namespace Minio.Functional.Tests
                 // Test GetObjectAsync function
                 GetObject_Test1(minioClient).Wait();
                 GetObject_Test2(minioClient).Wait();
+                GetObject_Test3(minioClient).Wait();
 
                 // Test File GetObject and PutObject functions
 
                 FGetObject_Test1(minioClient).Wait();
                 FPutObject_Test1(minioClient).Wait();
                 FPutObject_Test2(minioClient).Wait();
-                
+
                 // Test ListObjectAsync function
                 ListObjects_Test1(minioClient).Wait();
                 ListObjects_Test2(minioClient).Wait();
@@ -151,7 +151,7 @@ namespace Minio.Functional.Tests
                 CopyObject_Test2(minioClient).Wait();
                 CopyObject_Test3(minioClient).Wait();
                 CopyObject_Test4(minioClient).Wait();
-               
+
                 // Test SetPolicyAsync function
                 SetBucketPolicy_Test1(minioClient).Wait();
 
@@ -161,10 +161,11 @@ namespace Minio.Functional.Tests
 
                 // Test incomplete uploads
                 ListIncompleteUpload_Test1(minioClient).Wait();
-                
+
                 // Test GetBucket policy
+
                 GetBucketPolicy_Test1(minioClient).Wait();
-              
+
                 Console.ReadLine();
             }
             catch (MinioException ex)
@@ -226,7 +227,7 @@ namespace Minio.Functional.Tests
         private async static Task MakeBucket_Test4(MinioClient minio)
         {
             Console.Out.WriteLine("Test 4 : MakeBucketAsync with region");
-            string bucketName = GetRandomName(length: 20) + ".withperiod" ;
+            string bucketName = GetRandomName(length: 20) + ".withperiod";
             try
             {
                 await minio.MakeBucketAsync(bucketName, location: "us-west-2");
@@ -350,9 +351,9 @@ namespace Minio.Functional.Tests
                                            filestream,
                                            size,
                                            contentType);
-            } 
+            }
             catch (UnexpectedShortReadException)
-            { 
+            {
                 //PutObject failed as expected since the stream size is incorrect
                 //default to actual stream size and complete the upload
                 await PutObject_Tester(minio, bucketName, objectName, fileName, contentType);
@@ -362,15 +363,15 @@ namespace Minio.Functional.Tests
             File.Delete(fileName);
             Console.Out.WriteLine("Test4: PutobjectAsync with different content-type complete");
         }
-        private async static Task PutObject_Tester(MinioClient minio, string bucketName,string objectName,string fileName=null,string contentType="application/octet-stream",long size = 0)
+        private async static Task PutObject_Tester(MinioClient minio, string bucketName, string objectName, string fileName = null, string contentType = "application/octet-stream", long size = 0)
         {
             try
             {
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
-           
+
                 long file_write_size = filestream.Length;
-                long file_read_size = 0 ;
+                long file_read_size = 0;
                 string tempFileName = "tempfiletosavestream";
                 if (size == 0)
                     size = filestream.Length;
@@ -399,7 +400,7 @@ namespace Minio.Functional.Tests
 
                    Assert.AreEqual(file_read_size, file_write_size);
                    File.Delete(tempFileName);
-                });
+               });
                 ObjectStat statObject = await minio.StatObjectAsync(bucketName, objectName);
                 Assert.IsNotNull(statObject);
                 Assert.AreEqual(statObject.ObjectName, objectName);
@@ -429,14 +430,14 @@ namespace Minio.Functional.Tests
                 byte[] bs = File.ReadAllBytes(fileName);
                 System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
                 long file_write_size = filestream.Length;
-                 
+
                 await minio.PutObjectAsync(bucketName,
                                            objectName,
                                            filestream,
                                            filestream.Length,
                                            contentType);
 
-             
+
                 ObjectStat statObject = await minio.StatObjectAsync(bucketName, objectName);
                 Assert.IsNotNull(statObject);
                 Assert.AreEqual(statObject.ObjectName, objectName);
@@ -453,7 +454,7 @@ namespace Minio.Functional.Tests
             await TearDown(minio, bucketName);
             File.Delete(fileName);
             Console.Out.WriteLine("Test1: StatObjectAsync Complete");
-           
+
 
         }
         private async static Task CopyObject_Test1(MinioClient minio)
@@ -473,7 +474,7 @@ namespace Minio.Functional.Tests
 
             await minio.CopyObjectAsync(bucketName, objectName, destBucketName, destObjectName);
             string outFileName = "outFileName";
-  
+
             await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
             File.Delete(outFileName);
             await minio.RemoveObjectAsync(bucketName, objectName);
@@ -514,7 +515,7 @@ namespace Minio.Functional.Tests
             {
                 Assert.AreEqual(ex.Message, "Minio API responded with message=At least one of the pre-conditions you specified did not hold");
             }
- 
+
             await minio.RemoveObjectAsync(bucketName, objectName);
 
 
@@ -552,7 +553,7 @@ namespace Minio.Functional.Tests
             {
                 Assert.Fail();
             }
-           
+
             string outFileName = "outFileName";
             ObjectStat dstats = await minio.StatObjectAsync(destBucketName, destObjectName);
             Assert.IsNotNull(dstats);
@@ -560,7 +561,7 @@ namespace Minio.Functional.Tests
             Assert.AreEqual(dstats.ObjectName, destObjectName);
             await minio.GetObjectAsync(destBucketName, destObjectName, outFileName);
             File.Delete(outFileName);
-          
+
             await minio.RemoveObjectAsync(bucketName, objectName);
             await minio.RemoveObjectAsync(destBucketName, destObjectName);
 
@@ -661,16 +662,61 @@ namespace Minio.Functional.Tests
             await Setup_Test(minio, bucketName);
             try
             {
-                await minio.GetObjectAsync(bucketName, objectName,fileName);
+                await minio.GetObjectAsync(bucketName, objectName, fileName);
 
             }
             catch (ObjectNotFoundException ex)
             {
-                Assert.AreEqual(ex.message,"Not found.");
+                Assert.AreEqual(ex.message, "Not found.");
             }
 
             await TearDown(minio, bucketName);
             Console.Out.WriteLine("Test2: GetObjectAsync Complete");
+        }
+        private async static Task GetObject_Test3(MinioClient minio)
+        {
+            Console.Out.WriteLine("Test3: GetObjectAsync for partial object from stream");
+            string bucketName = GetRandomName(15);
+            string objectName = GetRandomName(10);
+            string fileName = CreateFile(1 * MB);
+            string contentType = null;
+            await Setup_Test(minio, bucketName);
+            try
+            {
+                byte[] bs = File.ReadAllBytes(fileName);
+                System.IO.MemoryStream filestream = new System.IO.MemoryStream(bs);
+                long file_write_size = 10L;
+                string tempFileName = "tempFileName";
+                long file_read_size = 0;
+                await minio.PutObjectAsync(bucketName,
+                                           objectName,
+                                           filestream,
+                                           filestream.Length,
+                                           contentType);
+
+                await minio.GetObjectAsync(bucketName, objectName, 1024L, file_write_size,
+              (stream) =>
+              {
+                  var fileStream = File.Create(tempFileName);
+                  stream.CopyTo(fileStream);
+                  fileStream.Dispose();
+                  FileInfo writtenInfo = new FileInfo(tempFileName);
+                  file_read_size = writtenInfo.Length;
+
+                  Assert.AreEqual(file_read_size, file_write_size);
+                  File.Delete(tempFileName);
+              });
+
+                await minio.RemoveObjectAsync(bucketName, objectName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[Bucket]  Exception: {0}", e);
+                Assert.Fail();
+            }
+            await TearDown(minio, bucketName);
+            File.Delete(fileName);
+            Console.Out.WriteLine("Test3: GetObjectAsync Complete");
         }
         private async static Task FGetObject_Test1(MinioClient minio)
         {
@@ -687,7 +733,7 @@ namespace Minio.Functional.Tests
             await minio.GetObjectAsync(bucketName, objectName, outFileName);
             File.Delete(outFileName);
             await minio.RemoveObjectAsync(bucketName, objectName);
-             
+
             await TearDown(minio, bucketName);
             File.Delete(fileName);
             Console.Out.WriteLine("Test1: GetObjectAsync Complete");
@@ -743,7 +789,7 @@ namespace Minio.Functional.Tests
             await minio.PutObjectAsync(bucketName,
                                        objectName2,
                                        fileName);
-            ListObjects_Test(minio, bucketName, prefix,2).Wait();
+            ListObjects_Test(minio, bucketName, prefix, 2).Wait();
             System.Threading.Thread.Sleep(5000);
             Console.Out.WriteLine("removing objects");
             await minio.RemoveObjectAsync(bucketName, objectName1);
@@ -760,13 +806,13 @@ namespace Minio.Functional.Tests
             Console.Out.WriteLine("Test2: ListObjectsAsync on empty bucket");
             string bucketName = GetRandomName(15);
             await Setup_Test(minio, bucketName);
-        
+
             await ListObjects_Test(minio, bucketName, null, 0);
-           
+
             await TearDown(minio, bucketName);
-             Console.Out.WriteLine("Test2: ListObjectsAsync Complete");
+            Console.Out.WriteLine("Test2: ListObjectsAsync Complete");
         }
-        private async static Task ListObjects_Test(MinioClient minio,string bucketName, string prefix,int numObjects, bool recursive = true)
+        private async static Task ListObjects_Test(MinioClient minio, string bucketName, string prefix, int numObjects, bool recursive = true)
         {
             int count = 0;
             try
@@ -812,7 +858,7 @@ namespace Minio.Functional.Tests
             Console.Out.WriteLine("Test1: RemoveObjectAsync Complete");
         }
 
-     
+
         private async static Task PresignedGetObject_Test1(MinioClient minio)
         {
             Console.Out.WriteLine("Test1: PresignedGetObjectAsync");
@@ -868,7 +914,7 @@ namespace Minio.Functional.Tests
             File.Delete(fileName);
             Console.Out.WriteLine("Test1: PresignedPutObjectAsync Complete");
         }
-        private static async Task UploadObjectAsync(string url,string filePath)
+        private static async Task UploadObjectAsync(string url, string filePath)
         {
             HttpWebRequest httpRequest = WebRequest.Create(url) as HttpWebRequest;
             httpRequest.Method = "PUT";
@@ -902,7 +948,7 @@ namespace Minio.Functional.Tests
                 await minio.PutObjectAsync(bucketName,
                             objectName,
                             fileName);
-           
+
                 // Generate presigned post policy url
                 PostPolicy form = new PostPolicy();
                 DateTime expiration = DateTime.UtcNow;
@@ -910,19 +956,19 @@ namespace Minio.Functional.Tests
                 form.SetKey(objectName);
                 form.SetBucket(bucketName);
                 var pairs = new List<KeyValuePair<string, string>>();
-                string url = "https://s3.amazonaws.com/" + bucketName  ;
+                string url = "https://s3.amazonaws.com/" + bucketName;
                 Tuple<string, System.Collections.Generic.Dictionary<string, string>> policyTuple = await minio.PresignedPostPolicyAsync(form);
                 var httpClient = new HttpClient();
 
                 using (var stream = File.OpenRead(fileName))
-                 {
+                {
                     MultipartFormDataContent multipartContent = new MultipartFormDataContent();
-                    multipartContent.Add(new StreamContent(stream), fileName,objectName);
+                    multipartContent.Add(new StreamContent(stream), fileName, objectName);
                     multipartContent.Add(new FormUrlEncodedContent(pairs));
-                    var response = await httpClient.PostAsync(url, multipartContent );
+                    var response = await httpClient.PostAsync(url, multipartContent);
                     response.EnsureSuccessStatusCode();
                 }
-                
+
                 // Validate
                 PolicyType policy = await minio.GetPolicyAsync(bucketName, objectName.Substring(5));
                 Assert.AreEqual(policy.GetType(), PolicyType.READ_ONLY);
@@ -935,16 +981,16 @@ namespace Minio.Functional.Tests
             {
                 Console.Out.WriteLine("Exception ", e.Message);
             }
-         
+
             Console.Out.WriteLine("Test1: PresignedPostPolicyAsync Complete");
 
-   
+
             await minio.RemoveObjectAsync(bucketName, objectName);
 
             await TearDown(minio, bucketName);
             File.Delete(fileName);
             Console.Out.WriteLine("Test1: PresignedPostPolicyAsync Complete");
-           
+
         }
 
         private async static Task ListIncompleteUpload_Test1(MinioClient minio)
@@ -976,8 +1022,8 @@ namespace Minio.Functional.Tests
 
                 IDisposable subscription = observable.Subscribe(
                     item => Assert.AreEqual(item.Key, objectName),
-                    ex   => Assert.Fail(),
-                    ()   => Console.WriteLine("Listed the pending uploads to bucket " + bucketName));
+                    ex => Assert.Fail(),
+                    () => Console.WriteLine("Listed the pending uploads to bucket " + bucketName));
 
                 await minio.RemoveIncompleteUploadAsync(bucketName, objectName);
             }
@@ -991,7 +1037,7 @@ namespace Minio.Functional.Tests
             Console.Out.WriteLine("Test1: ListIncompleteUploads Complete");
         }
 
-       
+
         // Set a policy for given bucket
         private async static Task SetBucketPolicy_Test1(MinioClient minio)
         {
@@ -1029,7 +1075,7 @@ namespace Minio.Functional.Tests
                                  objectName.Substring(5),
                                  PolicyType.READ_ONLY);
             PolicyType policy = await minio.GetPolicyAsync(bucketName, objectName.Substring(5));
-            Assert.AreEqual(policy.GetType(), PolicyType.READ_ONLY);
+            Assert.IsTrue(policy.Equals(PolicyType.READ_ONLY));
             await minio.RemoveObjectAsync(bucketName, objectName);
 
             await TearDown(minio, bucketName);

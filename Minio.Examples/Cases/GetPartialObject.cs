@@ -48,7 +48,7 @@ namespace Minio.Examples.Cases
                     // Uncommment to print the file on output console
                     //stream.CopyTo(Console.OpenStandardOutput());
                 });
-                //Console.WriteLine("Downloaded partial object into file " + fileName + " from bucket " + bucketName);
+                Console.WriteLine("Downloaded partial object into file " + fileName + " from bucket " + bucketName);
                 Console.Out.WriteLine();
             }
             catch (Exception e)

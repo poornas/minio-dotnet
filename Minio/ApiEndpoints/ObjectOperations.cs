@@ -45,18 +45,13 @@ namespace Minio
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         public async Task GetObjectAsync(string bucketName, string objectName, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
-            Dictionary<string, string> headerMap = new Dictionary<string, string>();
             var request = await this.CreateRequest(Method.GET,
                                                 bucketName,
-                                                objectName: objectName,
-                                                headerMap: headerMap);
+                                                objectName: objectName);
             request.ResponseWriter = cb;
-            
-            await this.GetObjectAsync(bucketName, objectName, 0, null, (stream) =>
-            {
-                cb(stream);
-            }, cancellationToken);
-            
+
+            var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken);
+
         }
 
 
@@ -69,11 +64,11 @@ namespace Minio
         /// <param name="length">length of the object that will be read in the stream </param>
         /// <param name="cancellationToken">Optional cancellation token to cancel the operation</param>
         /// <param name="callback">A stream will be passed to the callback</param>
-        public async Task GetObjectAsync(string bucketName, string objectName, long? offset,long? length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task GetObjectAsync(string bucketName, string objectName, long offset,long length, Action<Stream> cb, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (offset < 0)
                 throw new ArgumentException("Offset should be zero or greater");
-            if (length != null && length < 0)
+            if (length < 0)
                 throw new ArgumentException("Length should be greater than zero");
             Dictionary<string, string> headerMap = new Dictionary<string, string>();
             if (length > 0)

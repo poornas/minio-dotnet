@@ -1,4 +1,19 @@
-﻿using System;
+﻿/*
+ * Minio .NET Library for Amazon S3 Compatible Cloud Storage, (C) 2017 Minio, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Minio.DataModel.Policy;
@@ -138,8 +153,6 @@ namespace Minio.Tests
         [TestMethod]
         public void TestGetPolicy()
         {
-            //List<string> actions, string resourcePrefix, string effect = "Allow", string aws = "*", bool withConditions = false)
-
             var testCases = new List<KeyValuePair<List<Object>, PolicyType>>()
             {
               
@@ -612,7 +625,7 @@ namespace Minio.Tests
                 foreach (Statement statement in statements)
                     policy.statements.Add(statement);
                 Dictionary<string, PolicyType> actualResult = policy.GetPolicies();
-                Assert.IsTrue(expectedResult.DictionaryEqual(policy.GetPolicies()));
+                Assert.IsTrue(expectedResult.PoliciesEqual(policy.GetPolicies()));
             }
         }
 
@@ -623,7 +636,7 @@ namespace Minio.Tests
         {
             var testCases = new List<KeyValuePair<List<Object>, string>>()
             {
-                /* 
+            
                  // BucketPolicy NONE - empty statements, bucketname and prefix
                  new KeyValuePair<List<Object>,string>(new List<Object>
                  { @"{""Statement"":[]}",
@@ -650,7 +663,6 @@ namespace Minio.Tests
                 new KeyValuePair<List<Object>,string>(new List<Object>
                 { @"{""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}",
                PolicyType.READ_ONLY,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}"),
-            // ==>tested till here
            
                 // BucketPolicy READONLY - empty statements, empty bucket name and prefix.
                 new KeyValuePair<List<Object>,string>(new List<Object>
@@ -700,7 +712,7 @@ namespace Minio.Tests
                 { @"{""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}",
                PolicyType.READ_WRITE,"","" }, @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":["" * ""]},""Resource"":[""arn: aws: s3:::mybucket""],""Sid"":""""}]}"),           
                 // BucketPolicy WRITEONLY - empty statements, non-empty bucket name and prefix.
-            */        new KeyValuePair<List<Object>,string>(new List<Object>
+               new KeyValuePair<List<Object>,string>(new List<Object>
                 { @"{""Statement"":[]}",
                PolicyType.READ_WRITE,"mybucket","" }, @"{""Version"":""2012-10-17"",""Statement"":[{""Action"":[""s3:GetBucketLocation""],""Effect"":""Allow"",""Principal"":{""AWS"":[""*""]},""Resource"":[""arn:aws:s3:::mybucket""],""Sid"":""""},{""Action"":[""s3:ListBucket""],""Effect"":""Allow"",""Principal"":{""AWS"":[""*""]},""Resource"":[""arn:aws:s3:::mybucket""],""Sid"":""""},{""Action"":[""s3:ListBucketMultipartUploads""],""Effect"":""Allow"",""Principal"":{""AWS"":[""*""]},""Resource"":[""arn:aws:s3:::mybucket""],""Sid"":""""},{""Action"":[""s3:GetObject"",""s3:AbortMultipartUpload"",""s3:DeleteObject"",""s3:ListMultipartUploadParts"",""s3:PutObject""],""Effect"":""Allow"",""Principal"":{""AWS"":[""*""]},""Resource"":[""arn:aws:s3:::mybucket/*""],""Sid"":""""}]}"),
                    // BucketPolicy WRITEONLY - empty statements, non-empty bucket name and prefix.
