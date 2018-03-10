@@ -116,86 +116,86 @@ namespace Minio.Examples
                 // minioClient.SetTraceOff();
 
                 // Check if bucket exists
-                Cases.BucketExists.Run(minioClient, bucketName).Wait();
+                // Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
-                // Create a new bucket
-                Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+                // // Create a new bucket
+                // Cases.MakeBucket.Run(minioClient, bucketName).Wait();
 
-                Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
+                // Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
 
-                // List all the buckets on the server
-                Cases.ListBuckets.Run(minioClient).Wait();
+                // // List all the buckets on the server
+                // Cases.ListBuckets.Run(minioClient).Wait();
 
-                // Put an object to the new bucket
-                Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+                // // Put an object to the new bucket
+                // Cases.PutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // Get object metadata
-                Cases.StatObject.Run(minioClient, bucketName, objectName).Wait();
+                // // Get object metadata
+                // Cases.StatObject.Run(minioClient, bucketName, objectName).Wait();
 
-                // List the objects in the new bucket
-                Cases.ListObjects.Run(minioClient, bucketName);
+                // // List the objects in the new bucket
+                // Cases.ListObjects.Run(minioClient, bucketName);
 
-                // Delete the file and Download the object as file
-                Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+                // // Delete the file and Download the object as file
+                // Cases.GetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
                
-                // Delete the file and Download partial object as file
-                Cases.GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+                // // Delete the file and Download partial object as file
+                // Cases.GetPartialObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // Server side copyObject
-                Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
+                // // Server side copyObject
+                // Cases.CopyObject.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
 
-                // Upload a File with PutObject
-                Cases.FPutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+                // // Upload a File with PutObject
+                // Cases.FPutObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // Delete the file and Download the object as file
-                Cases.FGetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
+                // // Delete the file and Download the object as file
+                // Cases.FGetObject.Run(minioClient, bucketName, objectName, smallFileName).Wait();
 
-                // Automatic Multipart Upload with object more than 5Mb
-                Cases.PutObject.Run(minioClient, bucketName, objectName, bigFileName).Wait();
+                // // Automatic Multipart Upload with object more than 5Mb
+                // Cases.PutObject.Run(minioClient, bucketName, objectName, bigFileName).Wait();
 
-                // List the incomplete uploads
-                Cases.ListIncompleteUploads.Run(minioClient, bucketName);
+                // // List the incomplete uploads
+                // Cases.ListIncompleteUploads.Run(minioClient, bucketName);
 
-                // Remove all the incomplete uploads
-                Cases.RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).Wait();
+                // // Remove all the incomplete uploads
+                // Cases.RemoveIncompleteUpload.Run(minioClient, bucketName, objectName).Wait();
 
-                // Set a policy for given bucket
-                Cases.SetBucketPolicy.Run(minioClient, PolicyType.READ_ONLY, bucketName).Wait();
+                // // Set a policy for given bucket
+                // Cases.SetBucketPolicy.Run(minioClient, PolicyType.READ_ONLY, bucketName).Wait();
 
-                // Get the policy for given bucket
-                Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
+                // // Get the policy for given bucket
+                // Cases.GetBucketPolicy.Run(minioClient, bucketName).Wait();
 
-                // Set bucket notifications
-                Cases.SetBucketNotification.Run(minioClient, bucketName).Wait();
+                // // Set bucket notifications
+                // Cases.SetBucketNotification.Run(minioClient, bucketName).Wait();
 
-                // Get bucket notifications
-                Cases.GetBucketNotification.Run(minioClient, bucketName).Wait();
+                // // Get bucket notifications
+                // Cases.GetBucketNotification.Run(minioClient, bucketName).Wait();
 
-                // Remove all bucket notifications
-                Cases.RemoveAllBucketNotifications.Run(minioClient, bucketName).Wait();
+                // // Remove all bucket notifications
+                // Cases.RemoveAllBucketNotifications.Run(minioClient, bucketName).Wait();
 
                 // Get the presigned url for a GET object request
                 Cases.PresignedGetObject.Run(minioClient, bucketName, objectName).Wait();
 
-                // Get the presigned POST policy curl url
-                Cases.PresignedPostPolicy.Run(minioClient).Wait();
+                // // Get the presigned POST policy curl url
+                // Cases.PresignedPostPolicy.Run(minioClient).Wait();
 
-                // Get the presigned url for a PUT object request
-                Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
+                // // Get the presigned url for a PUT object request
+                // Cases.PresignedPutObject.Run(minioClient, bucketName, objectName).Wait();
 
-                // Delete the list of objects
-                Cases.RemoveObjects.Run(minioClient, bucketName, objectsList).Wait();
+                // // Delete the list of objects
+                // Cases.RemoveObjects.Run(minioClient, bucketName, objectsList).Wait();
 
-                // Delete the object
-                Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
+                // // Delete the object
+                // Cases.RemoveObject.Run(minioClient, bucketName, objectName).Wait();
 
-                // Delete the object
-                Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
+                // // Delete the object
+                // Cases.RemoveObject.Run(minioClient, destBucketName, objectName).Wait();
 
-                // Remove the buckets
-                Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
-                Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
+                // // Remove the buckets
+                // Cases.RemoveBucket.Run(minioClient, bucketName).Wait();
+                // Cases.RemoveBucket.Run(minioClient, destBucketName).Wait();
 
                 // Remove the binary files created for test
                 File.Delete(smallFileName);

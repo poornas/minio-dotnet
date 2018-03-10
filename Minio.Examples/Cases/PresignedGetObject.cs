@@ -29,7 +29,10 @@ namespace Minio.Examples.Cases
         {
             try
             {
-                Dictionary<string,string> reqParams = new Dictionary<string, string>(){{"response-content-type", "application/json"}};
+              //  Dictionary<string,string> reqParams = new Dictionary<string, string>(){{"response-content-type", "application/json"}};
+                  Dictionary<string,string> reqParams = new Dictionary<string, string>(){{"response-content-disposition", "attachment; filename=\"your-filename.txt\""}};
+                bucketName = "uploads";
+                objectName = "myfile";
                 string presigned_url = await client.PresignedGetObjectAsync(bucketName, objectName, 1000, reqParams);
                 Console.Out.WriteLine(presigned_url);
             } 
