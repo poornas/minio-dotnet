@@ -31,11 +31,13 @@ namespace Minio
         public static string GetRegionFromEndpoint(string endpoint)
         {
             string region = null;
-            Regex rgx = new Regex("s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
+            Regex rgx = new Regex("^([a-z0-9][a-z0-9\\.\\-]{1,61}[a-z0-9])*?.?s3[.-]?(.*?)\\.amazonaws\\.com$", RegexOptions.IgnoreCase);
             MatchCollection matches = rgx.Matches(endpoint);
+            Console.Out.WriteLine("matches ....", matches);
+            Console.Out.WriteLine("groupsd././.", matches.Count , " endpoint...", endpoint);
             if ((matches.Count > 0) && (matches[0].Groups.Count> 1))
             {
-                region = matches[0].Groups[1].Value;
+                region = matches[0].Groups[2].Value;
             }
             return (region == null) ? "" : region;
         }

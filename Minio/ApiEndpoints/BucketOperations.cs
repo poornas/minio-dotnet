@@ -44,12 +44,13 @@ namespace Minio
         public async Task<ListAllMyBucketsResult> ListBucketsAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
-            SetTargetURL(requestUrl);
+            //Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,region:this.Region);
+            var request= await this.CreateRequest(Method.GET,resourcePath:"/").ConfigureAwait(false);
+            //SetTargetURL(requestUrl);
             // Initialize a new client 
             //PrepareClient();
 
-            var request = new RestRequest("/", Method.GET);
+            //var request = new RestRequest("/", Method.GET);
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
 
             ListAllMyBucketsResult bucketList = new ListAllMyBucketsResult();
@@ -71,9 +72,16 @@ namespace Minio
         /// <returns> Task </returns>
         public async Task MakeBucketAsync(string bucketName, string location = "us-east-1", CancellationToken cancellationToken = default(CancellationToken))
         {
-
+            if (location.Equals("us-east-1"))
+            {
+                if (this.Region != "")
+                {
+                    location = this.Region;
+                }
+            }
+          
             // Set Target URL
-            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure);
+            Uri requestUrl = RequestUtil.MakeTargetURL(this.BaseUrl, this.Secure,location);
             SetTargetURL(requestUrl);
 
             var request = new RestRequest("/" + bucketName, Method.PUT);

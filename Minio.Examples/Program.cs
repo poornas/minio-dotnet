@@ -65,6 +65,8 @@ namespace Minio.Examples
             if (Environment.GetEnvironmentVariable("SERVER_ENDPOINT") != null)
             {
                 endPoint = Environment.GetEnvironmentVariable("SERVER_ENDPOINT");
+                            Console.Out.WriteLine("??ep=", endPoint);
+
                 accessKey = Environment.GetEnvironmentVariable("ACCESS_KEY");
                 secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
                 if (Environment.GetEnvironmentVariable("ENABLE_HTTPS") != null)
@@ -77,6 +79,7 @@ namespace Minio.Examples
                 secretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
                 enableHTTPS = true;
             }
+            Console.Out.WriteLine("??ep=", endPoint, "aK",accessKey, "SK",secretKey);
 #if NET452
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
@@ -86,8 +89,10 @@ namespace Minio.Examples
 
             // WithSSL() enables SSL support in Minio client
             MinioClient minioClient = null;
-            if (enableHTTPS)
+            if (enableHTTPS) {
+            Console.Out.WriteLine("writing .....endppoitn,..", endPoint);
                 minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
+            }
             else
                 minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey);
 
@@ -116,7 +121,7 @@ namespace Minio.Examples
                 // minioClient.SetTraceOff();
                 // Check if bucket exists
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
-
+/*
                 // Create a new bucket
                 Cases.MakeBucket.Run(minioClient, bucketName).Wait();
  
@@ -198,7 +203,7 @@ namespace Minio.Examples
                 // Remove the binary files created for test
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);
-
+*/
                 Console.ReadLine();
             }
             catch (MinioException ex)

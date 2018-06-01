@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using Minio.Helper;
 using RestSharp;
 using RestSharp.Authenticators;
 using System;
@@ -74,7 +75,7 @@ namespace Minio
         /// <param name="scheme">URL Scheme</param>
         /// <param name="accessKey">Access key id</param>
         /// <param name="secretKey">Secret access key</param>
-        public V4Authenticator(bool secure,string accessKey, string secretKey, string region ="us-east-1")
+        public V4Authenticator(bool secure,string accessKey, string secretKey, string region ="")
         {
             this.isSecure = secure;
             this.accessKey = accessKey;
@@ -83,6 +84,16 @@ namespace Minio
             this.isAnonymous = String.IsNullOrEmpty(accessKey) && String.IsNullOrEmpty(secretKey);
         }
 
+        private String getRegion(string url)
+        {
+            // if (this.Region != "")
+            // {
+            //     return this.Region;
+            // }
+            Console.Out.WriteLine("urllll...", url);
+            string region = Regions.GetRegionFromEndpoint(url);
+            return (region == "") ? "us-east-1" : region;
+        }
       
         /// <summary>
         /// Implements Authenticate interface method for IAuthenticator.
@@ -101,8 +112,9 @@ namespace Minio
             string canonicalRequest = GetCanonicalRequest(client, request, headersToSign);
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string stringToSign = GetStringToSign(this.Region, signingDate, canonicalRequestHash);
-            byte[] signingKey = GenerateSigningKey(this.Region, signingDate);
+            string region = this.getRegion(client.BaseUrl.Host);
+            string stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
+            byte[] signingKey = GenerateSigningKey(region, signingDate);
 
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
 
@@ -110,7 +122,7 @@ namespace Minio
 
             string signature = BytesToHex(signatureBytes);
           
-            string authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, this.Region);
+            string authorization = GetAuthorizationHeader(signedHeaders, signature, signingDate, region);
             request.AddHeader("Authorization", authorization);
 
         }
@@ -283,8 +295,9 @@ namespace Minio
             string headers = string.Join("&", headersToSign.Select(p => p.Key + "=" + utils.UrlEncode(p.Value)));
             byte[] canonicalRequestBytes = System.Text.Encoding.UTF8.GetBytes(canonicalRequest);
             string canonicalRequestHash = BytesToHex(ComputeSha256(canonicalRequestBytes));
-            string stringToSign = GetStringToSign(this.Region, signingDate, canonicalRequestHash);
-            byte[] signingKey = GenerateSigningKey(this.Region, signingDate);
+            string region = this.getRegion(client.BaseUrl.Host);
+            string stringToSign = GetStringToSign(region, signingDate, canonicalRequestHash);
+            byte[] signingKey = GenerateSigningKey(region, signingDate);
             byte[] stringToSignBytes = System.Text.Encoding.UTF8.GetBytes(stringToSign);
             byte[] signatureBytes = SignHmac(signingKey, stringToSignBytes);
             string signature = BytesToHex(signatureBytes);

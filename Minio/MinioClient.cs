@@ -107,6 +107,7 @@ namespace Minio
             {
                 return this.Region;
             }
+            Console.Out.WriteLine("get region from ", this.Endpoint);
             // pick region from endpoint if present
             string region = Regions.GetRegionFromEndpoint(this.Endpoint);
 
@@ -139,17 +140,23 @@ namespace Minio
         /// <param name="body">request body</param>
         /// <param name="resourcePath">query string</param>
         /// <returns>A RestRequest</returns>
-        internal async Task<RestRequest> CreateRequest(Method method, string bucketName, string objectName = null,
+        internal async Task<RestRequest> CreateRequest(Method method, string bucketName = null, string objectName = null,
                                 Dictionary<string, string> headerMap = null,
                                 string contentType = "application/octet-stream",
                                 Object body = null, string resourcePath = null)
         {
             // Validate bucket name and object name
-            if (bucketName == null && objectName == null)
+            // if (bucketName == null && objectName == null)
+            // {
+            //     throw new InvalidBucketNameException(bucketName, "null bucket name for object '" + objectName + "'");
+            // }
+            string region = "";
+            if ( bucketName != null)
             {
-                throw new InvalidBucketNameException(bucketName, "null bucket name for object '" + objectName + "'");
+                utils.validateBucketName(bucketName);
+                // Fetch correct region for bucket
+                region = await getRegion(bucketName).ConfigureAwait(false);
             }
-            utils.validateBucketName(bucketName);
             if (objectName != null)
             {
                 utils.validateObjectName(objectName);
@@ -157,9 +164,6 @@ namespace Minio
 
             // Start with user specified endpoint
             string host = this.BaseUrl;
-
-            // Fetch correct region for bucket
-            string region = await getRegion(bucketName).ConfigureAwait(false);
             
             this.restClient.Authenticator = new V4Authenticator(this.Secure, this.AccessKey, this.SecretKey, region);
 
@@ -181,7 +185,7 @@ namespace Minio
                     // use path style for location query
                     usePathStyle = true;
                 }
-                else if (bucketName.Contains(".") && this.Secure)
+                else if (bucketName != null  && bucketName.Contains(".") && this.Secure)
                 {
                     // use path style where '.' in bucketName causes SSL certificate validation error
                     usePathStyle = true;
@@ -249,6 +253,7 @@ namespace Minio
 
             // This is the actual url pointed to for all HTTP requests
             this.Endpoint = string.Format("{0}://{1}", scheme, host);
+            Console.Out.WriteLine(":init endpoint...", this.Endpoint, this.BaseUrl);
             this.uri = RequestUtil.GetEndpointURL(this.BaseUrl,this.Secure);
             RequestUtil.ValidateEndpoint(this.uri,this.Endpoint);
 
@@ -257,7 +262,7 @@ namespace Minio
             restClient = new RestSharp.RestClient(this.uri);
             restClient.UserAgent = this.FullUserAgent;
 
-            authenticator = new V4Authenticator(this.Secure,this.AccessKey, this.SecretKey);
+            authenticator = new V4Authenticator(this.Secure,this.AccessKey, this.SecretKey,this.Region);
             restClient.Authenticator = authenticator;
         }
 
