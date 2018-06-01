@@ -91,7 +91,7 @@ namespace Minio.Examples
             MinioClient minioClient = null;
             if (enableHTTPS) {
             Console.Out.WriteLine("writing .....endppoitn,..", endPoint);
-                minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey).WithSSL();
+                minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey,"us-west-1").WithSSL();
             }
             else
                 minioClient = new Minio.MinioClient(endPoint, accessKey, secretKey);
@@ -112,7 +112,7 @@ namespace Minio.Examples
                 }
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
-
+                bucketName = "s3wz";
                 // Set HTTP Tracing On
                 // minioClient.SetTraceOn();
 
@@ -121,9 +121,9 @@ namespace Minio.Examples
                 // minioClient.SetTraceOff();
                 // Check if bucket exists
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
-/*
+
                 // Create a new bucket
-                Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+                //Cases.MakeBucket.Run(minioClient, bucketName).Wait();
  
                 Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
 
@@ -203,7 +203,7 @@ namespace Minio.Examples
                 // Remove the binary files created for test
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);
-*/
+
                 Console.ReadLine();
             }
             catch (MinioException ex)
