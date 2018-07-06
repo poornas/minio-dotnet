@@ -47,7 +47,13 @@ namespace Minio.DataModel
         public Dictionary<string, string> metaData { get; private set; }
         public override string ToString()
         {
-            return string.Format("{0} : Size({1}) LastModified({2}) ETag({3}) Content-Type({4})",this.ObjectName, this.Size, this.LastModified, this.ETag, this.ContentType);
+            string s = "";
+            foreach (var item in metaData)
+            {
+                s += item.Key + ":" + item.Value + "\n";
+            }
+            Console.WriteLine("m=============eta.....>" + s);
+            return string.Format("{0} : Size({1}) LastModified({2}) ETag({3}) Content-Type({4} Metadata({4}))",this.ObjectName, this.Size, this.LastModified, this.ETag, this.ContentType, this.metaData);
         }
     }
 }

@@ -17,6 +17,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Minio.Examples.Cases
 {
@@ -48,7 +49,7 @@ namespace Minio.Examples.Cases
                                                objectName,
                                                filestream,
                                                filestream.Length,
-                                               "application/octet-stream");
+                                               "application/octet-stream",new Dictionary<string,string>{{"x-amz-meta-mykey","my-custom-value"}});
                 }
             
 

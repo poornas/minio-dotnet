@@ -909,15 +909,20 @@ namespace Minio
             ObjectStat srcStats = await this.StatObjectAsync(bucketName, objectName, cancellationToken).ConfigureAwait(false);
             // Copy metadata from the source object if no metadata replace directive
             Dictionary<string,string> meta = new Dictionary<string,string>();
-            var m = metadata;
+            Dictionary<string,string> m = metadata;
             if (copyConditions != null && !copyConditions.HasReplaceMetadataDirective()) 
             {
                 m = srcStats.metaData;
             }
-            foreach (var item in m)
+            if (m != null)
             {
-                meta[item.Key] = item.Value;
+                foreach (var item in m)
+                {
+                    meta[item.Key] = item.Value;
+                    Console.WriteLine(" >>>>>>>>>>writing KEY>>>>>>" + item.Key);
+                }
             }
+
 
             long srcByteRangeSize = 0L;
 
@@ -933,7 +938,12 @@ namespace Minio
 
             if ((copySize > Constants.MaxSingleCopyObjectSize) ||
                     (srcByteRangeSize > 0 && (srcByteRangeSize != srcStats.Size)))
+                    {Console.WriteLine("doing multipart;;");
+                    foreach (var item in meta){
+                        Console.WriteLine("received...." + item.Key + " ::: " + item.Value);
+                    }
                 await MultipartCopyUploadAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, copySize, meta, cancellationToken).ConfigureAwait(false);
+                    }
             else
                 await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, meta, null, cancellationToken, typeof(CopyObjectResult)).ConfigureAwait(false);
         }
@@ -978,9 +988,6 @@ namespace Minio
                 {
                     request.AddHeader(item.Key, item.Value); 
                 }
-                foreach (var item in customHeaders) {
-                    request.AddHeader(item.Key, item.Value);
-                }
             }
 
             var response = await this.ExecuteTaskAsync(this.NoErrorHandlers, request, cancellationToken).ConfigureAwait(false);
@@ -1020,7 +1027,11 @@ namespace Minio
             double partCount = multiPartInfo.partCount;
             double lastPartSize = multiPartInfo.lastPartSize;
             Part[] totalParts = new Part[(int)partCount];
-
+            Console.WriteLine("metadata=-received===>" + metadata);
+            foreach (var item in metadata)
+            {
+                Console.WriteLine(item.Key + " ::: " + item.Value);
+            }
             // No need to resume upload since this is a server side copy. Just initiate a new upload.
             string uploadId = await this.NewMultipartUploadAsync(destBucketName, destObjectName, metadata, cancellationToken).ConfigureAwait(false);
 
@@ -1031,6 +1042,7 @@ namespace Minio
             {
                 CopyConditions partCondition = copyConditions.Clone();
                 partCondition.byteRangeStart = (long)partSize * (partNumber - 1) + partCondition.byteRangeStart;
+                Console.WriteLine("start rangestart->" + partCondition.byteRangeStart.ToString() + " ...partsizer=>" + partSize.ToString() + " partnumber-1=" + (partNumber - 1).ToString() );
                 if (partNumber < partCount)
                     partCondition.byteRangeEnd = partCondition.byteRangeStart + (long)partSize - 1;
                 else
@@ -1042,6 +1054,7 @@ namespace Minio
                 }
                 Dictionary<string, string> customHeader = new Dictionary<string, string>();
                 customHeader.Add("x-amz-copy-source-range", "bytes=" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString());
+                Console.WriteLine("partConditioon....start=->" + partCondition.byteRangeStart.ToString() + "-" + partCondition.byteRangeEnd.ToString());
                 CopyPartResult cpPartResult = (CopyPartResult)await this.CopyObjectRequestAsync(bucketName, objectName, destBucketName, destObjectName, copyConditions, customHeader, resource, cancellationToken, typeof(CopyPartResult)).ConfigureAwait(false);
 
                 totalParts[partNumber - 1] = new Part() { PartNumber = partNumber, ETag = cpPartResult.ETag, size = (long)expectedReadSize };

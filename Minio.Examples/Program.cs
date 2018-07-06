@@ -83,6 +83,7 @@ namespace Minio.Examples
 
             try
             {
+                /* 
                 // Assign parameters before starting the test 
                 string bucketName = GetRandomName();
                 string smallFileName = CreateFile(1 * UNIT_MB);
@@ -97,20 +98,28 @@ namespace Minio.Examples
                 }
                 // Set app Info 
                 minioClient.SetAppInfo("app-name", "app-version");
-
+*/
                 // Set HTTP Tracing On
-                // minioClient.SetTraceOn();
+               // minioClient.SetTraceOn();
+                // Create a new bucket
+                string bucketName="fromb";
+                string destBucketName = "tob";
+                string objectName="iobject";
+               // Cases.MakeBucket.Run(minioClient, bucketName).Wait();
+               // Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
+                // Cases.PutObject.Run(minioClient, bucketName, objectName, "/home/kris/Downloads/smallfile").Wait();
+                // Cases.StatObject.Run(minioClient,bucketName, objectName).Wait();
+                Cases.CopyObjectMetadata.Run(minioClient, bucketName, objectName, destBucketName, objectName).Wait();
+                Cases.StatObject.Run(minioClient,destBucketName, objectName).Wait();
 
+/* 
 
                 // Set HTTP Tracing Off
                 // minioClient.SetTraceOff();
                 // Check if bucket exists
                 Cases.BucketExists.Run(minioClient, bucketName).Wait();
 
-                // Create a new bucket
-                Cases.MakeBucket.Run(minioClient, bucketName).Wait();
- 
-                Cases.MakeBucket.Run(minioClient, destBucketName).Wait();
+
 
 
                 // List all the buckets on the server
@@ -191,7 +200,7 @@ namespace Minio.Examples
                 // Remove the binary files created for test
                 File.Delete(smallFileName);
                 File.Delete(bigFileName);
-
+*/
                 Console.ReadLine();
             }
             catch (MinioException ex)

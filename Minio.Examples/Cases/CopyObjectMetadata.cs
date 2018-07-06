@@ -35,18 +35,20 @@ namespace Minio.Examples.Cases
 
                 // Optionally pass copy conditions to replace metadata on destination object with custom metadata
                 CopyConditions copyCond = new CopyConditions();
-                copyCond.SetReplaceMetadataDirective();
+                //copyCond.SetReplaceMetadataDirective();
 
                 // set custom metadata
                 Dictionary<string,string> metadata = new Dictionary<string,string>()
                 {
-                    { "Content-Type", "application/css"}
+                    { "Content-Type", "application/css"},
+                    {"X-amz-meta-copy2","my-copy-override"}
                 };
+                Console.WriteLine("copyinh....");
                 await minio.CopyObjectAsync(fromBucketName, 
                                                 fromObjectName, 
                                                 destBucketName, 
                                                 destObjectName, 
-                                                copyConditions:copyCond,
+                                                copyConditions:null,
                                                 metadata: metadata);
                 Console.Out.WriteLine("Copied object {0} from bucket {1} to bucket {2}", fromObjectName, fromBucketName, destBucketName);
                 Console.Out.WriteLine();    
